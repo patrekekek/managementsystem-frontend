@@ -16,16 +16,23 @@ export default function TeacherLayout() {
         {/* Screens inside teacher folder */}
         <Stack.Screen 
           name="index" 
-          options={{ title: "Teacher Dashboard" }} 
+          options={{ headerShown: false }} 
         />
-        <Stack.Screen 
+
+        <Stack.Screen
+          name="(auth)"
+          options={{ headerShown: false }}
+        />
+
+
+        {/* <Stack.Screen 
           name="leaves" 
           options={{ title: "Leave Requests" }} 
         />
         <Stack.Screen 
           name="profile" 
           options={{ title: "Profile" }} 
-        />
+        /> */}
       </Stack>
     </SafeAreaView>
   );
