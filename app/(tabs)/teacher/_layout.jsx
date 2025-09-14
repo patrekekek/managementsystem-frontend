@@ -1,14 +1,46 @@
-import { Stack } from "expo-router";
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TeacherLayout() {
   return (
-    <Stack
+    <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: "#4CAF50" }, // green header
-        headerTintColor: "#fff", // white text/icons
+        headerStyle: { backgroundColor: "#4CAF50" },
+        headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "bold" },
-        headerTitleAlign: "center", // center title
+        tabBarActiveTintColor: "#4CAF50",
+        tabBarInactiveTintColor: "gray",
+        tabBarLabelStyle: { fontSize: 12 },
       }}
-    />
+    >
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: "Dashboard",
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="file-leave"
+        options={{
+          title: "File Leave",
+          tabBarIcon: ({ color, size }) => <Ionicons name="create-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="my-leaves"
+        options={{
+          title: "My Leaves",
+          tabBarIcon: ({ color, size }) => <Ionicons name="list-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="leave-history"
+        options={{
+          title: "Leave History",
+          tabBarIcon: ({ color, size }) => <Ionicons name="time-outline" size={size} color={color} />,
+        }}
+      />
+    </Tabs>
   );
 }

@@ -1,16 +1,19 @@
+import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, StyleSheet } from "react-native";
 
-export default function FileLeavePage() {
+export default function FileLeave() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>File a Leave</Text>
-      <Text style={styles.subtitle}>Here you can file your leave request.</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>File a Leave</Text>
+        <Text>Submit a new leave request here.</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold" },
-  subtitle: { fontSize: 16, color: "#6b7280", marginTop: 8 },
+  container: { flex: 1, backgroundColor: "#fff" },
+  content: { flex: 1, justifyContent: "center", alignItems: "center", padding: 16 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 8 },
 });
