@@ -5,9 +5,7 @@ import React from 'react'
 const Home = () => {
   return (
     <View>
-      <Text onPress={() => router.push('/teacher/leave-history')}>
-        Home Bilat
-      </Text>
+
 
       <Text onPress={() => router.push('/(auth)/login')}>
         Login
@@ -40,6 +38,19 @@ const Home = () => {
           Teacher my-leaves
         </Text>
       </View>
+
+      <View>
+        <Text onPress={() => router.push('/(admin)/dashboard')}>
+          Admin Dashboard
+        </Text>
+      </View>
+
+      <View>
+        <Text onPress={() => router.push('/(admin)/leave-details')}>
+          Admin leave-details
+        </Text>
+      </View>
+
     </View>
   )
 }

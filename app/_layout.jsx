@@ -1,38 +1,21 @@
-// app/teacher/_layout.jsx
-import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native";
-import { View, Text } from "react-native";
 
-export default function TeacherLayout() {
+import { Stack } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function RootLayout() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: "#4CAF50" }, // green header
-          headerTintColor: "#fff", // white text/icons
-          headerTitleStyle: { fontWeight: "bold" },
-        }}
+        // screenOptions={{
+        //   headerStyle: { backgroundColor: "#4CAF50" }, // green header
+        //   headerTintColor: "#fff", // white text/icons
+        //   headerTitleStyle: { fontWeight: "bold" },
+        // }}
       >
-        {/* Screens inside teacher folder */}
-        <Stack.Screen 
-          name="index" 
-          options={{ headerShown: false }} 
-        />
-
-        <Stack.Screen
-          name="(auth)"
-          options={{ headerShown: false }}
-        />
-
-
-        {/* <Stack.Screen 
-          name="leaves" 
-          options={{ title: "Leave Requests" }} 
-        />
-        <Stack.Screen 
-          name="profile" 
-          options={{ title: "Profile" }} 
-        /> */}
+        <Stack.Screen name="index" options={{ headerShown: true }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
+        {/* <Stack.Screen name="/search/[query]" options={{ headerShown: true }} /> */}
       </Stack>
     </SafeAreaView>
   );
