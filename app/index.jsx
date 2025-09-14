@@ -7,46 +7,46 @@ const Home = () => {
     <View>
 
 
-      <Text onPress={() => router.push('/(auth)/login')}>
+      <Text onPress={() => router.push('/auth/login')}>
         Login
       </Text>
 
-      <Text onPress={() => router.push('/(auth)/register')}>
+      <Text onPress={() => router.push('/auth/register')}>
         Signup
       </Text>
 
       <View>
-        <Text onPress={() => router.push('/(teacher)/dashboard')}>
+        <Text onPress={() => router.push('/teacher/dashboard')}>
           Teacher Dashboard
         </Text>
       </View>
 
       <View>
-        <Text onPress={() => router.push('/(teacher)/file-leave')}>
+        <Text onPress={() => router.push('/teacher/file-leave')}>
           Teacher file leave
         </Text>
       </View>
 
       <View>
-        <Text onPress={() => router.push('/(teacher)/leave-history')}>
+        <Text onPress={() => router.push('/teacher/leave-history')}>
           Teacher leave-history
         </Text>
       </View>
 
       <View>
-        <Text onPress={() => router.push('/(teacher)/my-leaves')}>
+        <Text onPress={() => router.push('/teacher/my-leaves')}>
           Teacher my-leaves
         </Text>
       </View>
 
       <View>
-        <Text onPress={() => router.push('/(admin)/dashboard')}>
+        <Text onPress={() => router.push('/admin/dashboard')}>
           Admin Dashboard
         </Text>
       </View>
 
       <View>
-        <Text onPress={() => router.push('/(admin)/leave-details')}>
+        <Text onPress={() => router.push('/admin/leave-details')}>
           Admin leave-details
         </Text>
       </View>

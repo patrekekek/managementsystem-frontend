@@ -12,9 +12,11 @@ export default function RootLayout() {
         //   headerTitleStyle: { fontWeight: "bold" },
         // }}
       >
-        <Stack.Screen name="index" options={{ headerShown: true }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="teacher" options={{ headerShown: false }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {/* <Stack.Screen name="/search/[query]" options={{ headerShown: true }} /> */}
       </Stack>
     </SafeAreaView>
