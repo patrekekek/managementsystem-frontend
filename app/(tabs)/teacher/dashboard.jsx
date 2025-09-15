@@ -1,19 +1,146 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet } from "react-native";
+// app/(tabs)/teacher/dashboard.jsx
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
+import { useAuth } from "../../../context/AuthContext";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons"; // make sure expo install react-native-vector-icons
 
-export default function Dashboard() {
+export default function TeacherDashboard() {
+  const { user } = useAuth();
+
+  const recentActivity = [
+    { id: "1", message: "Sick Leave approved (Sept 14)" },
+    { id: "2", message: "Vacation Leave pending (Sept 10)" },
+    { id: "3", message: "Filed Emergency Leave (Sept 5)" },
+  ];
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Teacher Dashboard</Text>
-        <Text>Overview of leave status and notifications.</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.welcome}>
+          👋 Welcome, {user?.username || "Teacher"}
+        </Text>
+        <Text style={styles.subText}>You have 2 pending leave requests</Text>
       </View>
-    </SafeAreaView>
+
+      {/* Leave Summary */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Leave Summary</Text>
+        <Text style={styles.leaveType}>Vacation: 5 days left</Text>
+        <Text style={styles.leaveType}>Sick: 3 days left</Text>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.actionsContainer}>
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => router.push("/(tabs)/teacher/file-leave")}
+        >
+          <Ionicons name="create-outline" size={24} color="#4CAF50" />
+          <Text style={styles.actionLabel}>File Leave</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => router.push("/(tabs)/teacher/my-leaves")}
+        >
+          <Ionicons name="folder-outline" size={24} color="#2196F3" />
+          <Text style={styles.actionLabel}>My Leaves</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => router.push("/(tabs)/teacher/leave-history")}
+        >
+          <Ionicons name="time-outline" size={24} color="#FF9800" />
+          <Text style={styles.actionLabel}>History</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Recent Activity */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Recent Activity</Text>
+        <FlatList
+          data={recentActivity}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Text style={styles.activityItem}>• {item.message}</Text>
+          )}
+        />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  content: { flex: 1, justifyContent: "center", alignItems: "center", padding: 16 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 8 },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f9fafb",
+  },
+  header: {
+    marginBottom: 16,
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  subText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 4,
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#333",
+  },
+  leaveType: {
+    fontSize: 16,
+    color: "#444",
+    marginBottom: 4,
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  actionCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 16,
+    marginHorizontal: 4,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  actionLabel: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  activityItem: {
+    fontSize: 15,
+    color: "#555",
+    marginBottom: 6,
+  },
 });

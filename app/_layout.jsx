@@ -1,24 +1,12 @@
-
 import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthProvider } from "../context/AuthContext";
 
 export default function RootLayout() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Stack
-        // screenOptions={{
-        //   headerStyle: { backgroundColor: "#4CAF50" }, // green header
-        //   headerTintColor: "#fff", // white text/icons
-        //   headerTitleStyle: { fontWeight: "bold" },
-        // }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="teacher" options={{ headerShown: false }} />
-        <Stack.Screen name="admin" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="/search/[query]" options={{ headerShown: true }} /> */}
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Expo Router auto-detects all routes */}
       </Stack>
-    </SafeAreaView>
+    </AuthProvider>
   );
 }

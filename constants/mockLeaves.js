@@ -3,7 +3,7 @@
 export const mockLeaves = [
   {
     id: "1",
-    teacherName: "Patrick Aniro",
+    teacherName: "teacher 1",
     type: "Sick Leave",
     startDate: "2025-09-01",
     endDate: "2025-09-03",

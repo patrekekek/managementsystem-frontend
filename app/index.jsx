@@ -1,60 +1,55 @@
-import { StyleSheet, Text, View } from 'react-native'
-import { Link, Redirect, router } from 'expo-router';
-import React from 'react'
+// app/index.jsx
+import { StyleSheet, View, Text } from "react-native";
+import { Link } from "expo-router";
 
-const Home = () => {
+export default function Home() {
+  const navItems = [
+    { label: "Login", path: "/auth/login" },
+    { label: "Register", path: "/auth/register" },
+    { label: "Teacher Dashboard", path: "/(tabs)/teacher/dashboard" },
+    { label: "Teacher File Leave", path: "/(tabs)/teacher/file-leave" },
+    { label: "Teacher Leave History", path: "/(tabs)/teacher/leave-history" },
+    { label: "Teacher My Leaves", path: "/(tabs)/teacher/my-leaves" },
+    { label: "Admin Dashboard", path: "/admin/dashboard" },
+    { label: "Admin Leave Details", path: "/admin/leave-details" },
+  ];
+
   return (
-    <View>
+    <View style={styles.container}>
+      <Text style={styles.title}>🚀 Test Navigation</Text>
 
-
-      <Text onPress={() => router.push('/auth/login')}>
-        Login
-      </Text>
-
-      <Text onPress={() => router.push('/auth/register')}>
-        Signup
-      </Text>
-
-      <View>
-        <Text onPress={() => router.push('/teacher/dashboard')}>
-          Teacher Dashboard
-        </Text>
-      </View>
-
-      <View>
-        <Text onPress={() => router.push('/teacher/file-leave')}>
-          Teacher file leave
-        </Text>
-      </View>
-
-      <View>
-        <Text onPress={() => router.push('/teacher/leave-history')}>
-          Teacher leave-history
-        </Text>
-      </View>
-
-      <View>
-        <Text onPress={() => router.push('/teacher/my-leaves')}>
-          Teacher my-leaves
-        </Text>
-      </View>
-
-      <View>
-        <Text onPress={() => router.push('/admin/dashboard')}>
-          Admin Dashboard
-        </Text>
-      </View>
-
-      <View>
-        <Text onPress={() => router.push('/admin/leave-details')}>
-          Admin leave-details
-        </Text>
-      </View>
-
+      {navItems.map((item, index) => (
+        <Link key={index} href={item.path} style={styles.button}>
+          <Text style={styles.buttonText}>{item.label}</Text>
+        </Link>
+      ))}
     </View>
-  )
+  );
 }
 
-export default Home
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#4CAF50",
+    padding: 12,
+    marginVertical: 6,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
