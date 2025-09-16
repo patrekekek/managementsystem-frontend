@@ -1,30 +1,45 @@
-// context/LeaveContext.jsx
 import React, { createContext, useContext, useState } from "react";
-import { useAuth } from "./AuthContext";
 
 const LeaveContext = createContext();
 
-export const LeaveProvider = ({ children }) => {
-  const [leaves, setLeaves] = useState([]);
-  const { user } = useAuth();
+export function LeaveProvider({ children }) {
+  const [leaves, setLeaves] = useState([]); // shared leave requests
 
+  // teacher filing a request
   const fileLeave = (leaveData) => {
-    if (!user) return; // prevent filing without login
-
     const newLeave = {
-      id: Date.now(), // unique id
-      userId: user.id, // attach logged-in user
+      id: Date.now().toString(),
       ...leaveData,
+      status: "pending",
     };
-
     setLeaves((prev) => [...prev, newLeave]);
   };
 
+  // admin approving
+  const approveLeave = (id) => {
+    setLeaves((prev) =>
+      prev.map((leave) =>
+        leave.id === id ? { ...leave, status: "approved" } : leave
+      )
+    );
+  };
+
+  // admin rejecting
+  const rejectLeave = (id) => {
+    setLeaves((prev) =>
+      prev.map((leave) =>
+        leave.id === id ? { ...leave, status: "rejected" } : leave
+      )
+    );
+  };
+
   return (
-    <LeaveContext.Provider value={{ leaves, fileLeave }}>
+    <LeaveContext.Provider
+      value={{ leaves, fileLeave, approveLeave, rejectLeave }}
+    >
       {children}
     </LeaveContext.Provider>
   );
-};
+}
 
 export const useLeaves = () => useContext(LeaveContext);

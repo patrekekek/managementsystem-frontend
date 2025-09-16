@@ -32,7 +32,15 @@ export default function FileLeave() {
       return;
     }
 
-    fileLeave({ date, leaveType, reason });
+    // create the new leave request
+    fileLeave({
+      id: Date.now(), // unique id for mock
+      name: user?.name || "Anonymous",
+      leaveType,
+      reason,
+      date,
+      status: "Pending", // so admin can approve/reject
+    });
 
     Alert.alert("Success", "Leave filed successfully", [
       {
@@ -66,7 +74,9 @@ export default function FileLeave() {
             onPress={() => setShowModal(true)}
           >
             <Text style={{ color: leaveType ? "#000" : "#999" }}>
-              {leaveType || "Select Leave Type"}
+              {leaveType
+                ? leaveType.charAt(0).toUpperCase() + leaveType.slice(1)
+                : "Select Leave Type"}
             </Text>
           </TouchableOpacity>
 
@@ -143,12 +153,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#f9f9f9",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
   },
   label: {
     fontSize: 16,
