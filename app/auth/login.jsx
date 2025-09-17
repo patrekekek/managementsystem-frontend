@@ -15,8 +15,14 @@ export default function Login() {
     const success = login(username, password);
 
     if (success) {
-      router.replace("/(tabs)/teacher/dashboard");
-      setError("");
+      if (success.role === "admin") {
+        router.replace("/admin/dashboard");
+
+      } else if (success.role === "teacher") {
+        router.replace("/(tabs)/teacher/dashboard")
+      }
+      // router.replace("/(tabs)/teacher/dashboard");
+      // setError("");
     } else {
       setError("Invalid username or password");
     }

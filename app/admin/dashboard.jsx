@@ -6,13 +6,18 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const pendingRequests = [
     { id: "1", teacher: "Mr. Cruz", type: "Sick Leave", date: "Sept 14" },
     { id: "2", teacher: "Ms. Reyes", type: "Vacation Leave", date: "Sept 12" },
     { id: "3", teacher: "Mr. Santos", type: "Emergency Leave", date: "Sept 10" },
   ];
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/");
+  }
 
   return (
     <View style={styles.container}>
@@ -21,10 +26,16 @@ export default function AdminDashboard() {
         <Text style={styles.welcome}>
           🛡️ Welcome, {user?.username || "Admin"}
         </Text>
-        <Text style={styles.subText}>
-          You have {pendingRequests.length} pending requests
-        </Text>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Log Out</Text>
+      </TouchableOpacity>
+      
       </View>
+
+      <Text style={styles.subText}>
+          You have {pendingRequests.length} pending requests
+      </Text>
 
       {/* Quick Stats */}
       <View style={styles.card}>
@@ -85,6 +96,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
     marginBottom: 16,
   },
   welcome: {
@@ -148,5 +163,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#555",
     marginBottom: 6,
+  },
+
+  logoutButton: {
+    backgroundColor: "#ADD8E6",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
 });

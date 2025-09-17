@@ -14,9 +14,9 @@ export const AuthProvider = ({ children }) => {
 
     if (account) {
       setUser(account); // store account in contexta
-      return true;
+      return account;
     } else {
-      return false;
+      return null;
     }
   };
 

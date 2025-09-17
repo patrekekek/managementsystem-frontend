@@ -162,10 +162,10 @@ const styles = StyleSheet.create({
   },
 
   logoutButton: {
-  backgroundColor: "#D1FFBD",
-  paddingVertical: 12,
-  paddingHorizontal: 24,
-  borderRadius: 8,
+    backgroundColor: "#D1FFBD",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
 
 });
