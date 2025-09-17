@@ -6,13 +6,18 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons"; // make sure expo install react-native-vector-icons
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const recentActivity = [
     { id: "1", message: "Sick Leave approved (Sept 14)" },
     { id: "2", message: "Vacation Leave pending (Sept 10)" },
     { id: "3", message: "Filed Emergency Leave (Sept 5)" },
   ];
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/")
+  }
 
   return (
     <View style={styles.container}>
@@ -21,8 +26,16 @@ export default function TeacherDashboard() {
         <Text style={styles.welcome}>
           👋 Welcome, {user?.username || "Teacher"}
         </Text>
-        <Text style={styles.subText}>You have 2 pending leave requests</Text>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Log Out</Text>
+      </TouchableOpacity>
+
+        
       </View>
+
+      
+      <Text style={styles.subText}>You have 2 pending leave requests</Text>
 
       {/* Leave Summary */}
       <View style={styles.card}>
@@ -80,6 +93,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
     marginBottom: 16,
   },
   welcome: {
@@ -143,4 +160,12 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 6,
   },
+
+  logoutButton: {
+  backgroundColor: "#D1FFBD",
+  paddingVertical: 12,
+  paddingHorizontal: 24,
+  borderRadius: 8,
+  },
+
 });
