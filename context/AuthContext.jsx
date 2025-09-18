@@ -6,6 +6,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [accounts, setAccounts] = useState(null);
 
   const login = (username, password) => {
     const account = mockAccounts.find(
@@ -20,10 +21,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = (username, password, role = "teacher") => {
+    const newAccount = { username, password, role };
+    setAccounts((prev) => [...prev, newAccount]);
+    setUser(newAccount);
+    return newAccount;
+  }
+
   const logout = () => setUser(null);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

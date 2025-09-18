@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { router } from "expo-router"
+
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -7,7 +10,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const { register } = useAuth();
+
   const handleRegister = () => {
+    //continue here
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -27,20 +33,20 @@ export default function RegisterPage() {
       {/* Name Input */}
       <TextInput
         style={styles.input}
-        placeholder="Full Name"
+        placeholder="username"
         value={name}
         onChangeText={setName}
       />
 
       {/* Email Input */}
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-      />
+      /> */}
 
       {/* Password Input */}
       <TextInput
