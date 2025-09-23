@@ -1,87 +1,177 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { router } from "expo-router"
-
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { router } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+  const { register } = useAuth();
+  const [name, setName] = useState({ first: "", middle: "", last: "" });
+  const [username, setUsername] = useState("");
+  const [office, setOffice] = useState("");
+  const [position, setPosition] = useState("");
+  const [salary, setSalary] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const { register } = useAuth();
-
-  const handleRegister = () => {
-    //continue here
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    // 🔐 Replace this with your backend register logic
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
-    alert("Account registered!");
+
+    setError("");
+    const data = await register({
+      name: {
+        first: (name.first || "").trim(),
+        middle: (name.middle || "").trim(),
+        last: (name.last || "").trim(),
+      },
+      username: (username || "").trim(),
+      office_department: (office || "").trim(),
+      position: (position || "").trim(),
+      salary: Number(salary),
+      email: (email || "").trim(),
+      password,
+      role: "teacher",
+    });
+
+    if (data) {
+      alert("Registration successful");
+      router.replace("../(tabs)/teacher/dashboard");
+    } else {
+      setError("Registration failed");
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register an Account 📝</Text>
-      <Text style={styles.subtitle}>Fill in the details to create your account</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.title}>Register an Account 📝</Text>
+        <Text style={styles.subtitle}>
+          Fill in the details to create your account
+        </Text>
 
-      {/* Name Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="username"
-        value={name}
-        onChangeText={setName}
-      />
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {/* Email Input */}
-      {/* <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      /> */}
+        {/* First Name */}
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          value={name.first}
+          onChangeText={(text) => setName({ ...name, first: text })}
+        />
 
-      {/* Password Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        {/* Middle Name */}
+        <TextInput
+          style={styles.input}
+          placeholder="Middle Name"
+          value={name.middle}
+          onChangeText={(text) => setName({ ...name, middle: text })}
+        />
 
-      {/* Confirm Password Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
+        {/* Last Name */}
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={name.last}
+          onChangeText={(text) => setName({ ...name, last: text })}
+        />
 
-      {/* Register Button */}
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+        {/* Username */}
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
 
-      {/* Back to Login */}
-      <TouchableOpacity onPress={() => alert("Go to Login page")}>
-        <Text style={styles.link}>Already have an account? Log In</Text>
-      </TouchableOpacity>
-    </View>
+        {/* Office/Department */}
+        <TextInput
+          style={styles.input}
+          placeholder="Office/Department"
+          value={office}
+          onChangeText={setOffice}
+        />
+
+        {/* Position */}
+        <TextInput
+          style={styles.input}
+          placeholder="Position"
+          value={position}
+          onChangeText={setPosition}
+        />
+
+        {/* Salary */}
+        <TextInput
+          style={styles.input}
+          placeholder="Salary"
+          value={salary}
+          onChangeText={setSalary}
+          keyboardType="numeric"
+        />
+
+        {/* Email */}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        {/* Password */}
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        {/* Confirm Password */}
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+
+        {/* Register Button */}
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
+
+        {/* Back to Login */}
+        <TouchableOpacity onPress={() => router.replace("/auth/login")}>
+          <Text style={styles.link}>Already have an account? Log In</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     padding: 24,
     backgroundColor: "#f9fafb",
@@ -124,5 +214,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#2563eb",
     fontSize: 14,
+  },
+  error: {
+    color: "red",
+    marginBottom: 12,
+    textAlign: "center",
   },
 });

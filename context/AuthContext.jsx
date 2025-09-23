@@ -1,32 +1,82 @@
-// context/AuthContext.js
+
 import React, { createContext, useContext, useState } from "react";
-import { mockAccounts } from "../constants/mockAccounts";
+import { loginUser, registerUser } from "../api/userApi";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [accounts, setAccounts] = useState(null);
 
-  const login = (username, password) => {
-    const account = mockAccounts.find(
-      (acc) => acc.username === username && acc.password === password
-    );
 
-    if (account) {
-      setUser(account); // store account in contexta
-      return account;
-    } else {
+  const login = async (username, password) => {
+    try {
+      const data = await loginUser(username.trim(), password);
+
+      if (data) {
+        setUser({
+          _id: data._id,
+          username: data.username,
+          email: data.email,
+          role: data.role,
+          name: data.name,
+          office_department: data.office_department,
+          position: data.position,
+          salary: data.salary,
+          token: data.token,
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Login error:", error);
       return null;
     }
   };
 
-  const register = (username, password, role = "teacher") => {
-    const newAccount = { username, password, role };
-    setAccounts((prev) => [...prev, newAccount]);
-    setUser(newAccount);
-    return newAccount;
-  }
+
+  const register = async ({
+    name,
+    username,
+    office_department,
+    position,
+    salary,
+    email,
+    password,
+    role = "teacher",
+  }) => {
+    try {
+      const data = await registerUser({
+        name,
+        username: username.trim(),
+        office_department,
+        position,
+        salary,
+        email: email.trim(),
+        password,
+        role,
+      });
+
+      if (data) {
+        setUser({
+          _id: data._id,
+          username: data.username,
+          email: data.email,
+          role: data.role,
+          name: data.name,
+          office_department: data.office_department,
+          position: data.position,
+          salary: data.salary,
+          token: data.token,
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Registration error:", error);
+      return null;
+    }
+  };
+
 
   const logout = () => setUser(null);
 
@@ -38,3 +88,67 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
+
+
+// // context/AuthContext.js
+// import React, { createContext, useContext, useState } from "react";
+// import { loginUser, registerUser } from "../api/userApi";
+
+
+// const AuthContext = createContext();
+
+// export const AuthProvider = ({ children }) => {
+//   const [user, setUser] = useState(null);
+
+
+//   const login = async (username, password) => {
+//     try {
+//       const data = await loginUser(username, password);
+//       setUser({ 
+//         username: data.username,
+//         email: data.email,
+//         role: data.role,
+//         token: data.token,
+//         name: data.name,
+//         office_department: data.office_department,
+//         position: data.position,
+//         salary: data.salary
+//       });
+//       return data;
+//     } catch (error) {
+//       console.error(error);
+//       return null;
+//     }
+//   };
+
+//   const register = async ({ name, username, office_department, position, salary, email, password, role = "teacher" }) => {
+//     try {
+//       const data = await registerUser({ name, username, office_department, position, salary, email, password, role });
+//       setUser({ 
+//         username: data.username,
+//         email: data.email,
+//         role: data.role,
+//         token: data.token,
+//         name: data.name,
+//         office_department: data.office_department,
+//         position: data.position,
+//         salary: data.salary
+//       });
+//       return data;
+//     } catch (error) {
+//       console.error(error);
+//       return null; 
+//     }
+//   };
+
+//   const logout = () => setUser(null);
+
+//   return (
+//     <AuthContext.Provider value={{ user, login, register, logout }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
+// export const useAuth = () => useContext(AuthContext);
