@@ -26,3 +26,27 @@ export const mockLeaves = [
     status: "Rejected",
   },
 ];
+
+
+
+      // if (data) {
+      //   setUser({
+      //     _id: data._id,
+      //     username: data.username,
+      //     email: data.email,
+      //     role: data.role,
+      //     name: data.name,
+      //     office_department: data.office_department,
+      //     position: data.position,
+      //     salary: data.salary,
+      //     token: data.token,
+      //   });
+      // }
+
+
+
+//       router.push("/login") → goes to (auth)/login
+
+// router.push("/teacher") → goes to (tabs)/teacher/index (Dashboard)
+
+// router.push("/admin") → goes to admin/index (Dashboard)

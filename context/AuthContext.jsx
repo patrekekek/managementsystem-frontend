@@ -1,92 +1,47 @@
+import { createContext, useReducer, useEffect } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import React, { createContext, useContext, useState } from "react";
-import { loginUser, registerUser } from "../api/userApi";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export const authReducer = (state, action) => {
+  switch(action.type) {
+    case 'LOGIN':
+      return { user: action.payload }
+    case 'LOGOUT':
+      return { user: null }
+    default:
+      return state;
+  }
+}
 
-  const login = async (username, password) => {
+export const AuthContextProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, {
+    user: null
+  })
+
+useEffect(() => {
+  const loadUser = async () => {
     try {
-      const data = await loginUser({
-        username: username.trim(),
-        password
-      });
-
-      if (data) {
-        setUser({
-          _id: data._id,
-          username: data.username,
-          email: data.email,
-          role: data.role,
-          name: data.name,
-          office_department: data.office_department,
-          position: data.position,
-          salary: data.salary,
-          token: data.token,
-        });
+      const user = await AsyncStorage.getItem('user');
+      if (user) {
+        dispatch({ type: 'LOGIN', payload: JSON.parse(user) });
       }
-
-      return data;
-    } catch (error) {
-      console.error("Login error:", error);
-      return null;
+    } catch (err) {
+      console.error("Failed to load user:", err);
     }
   };
 
-
-  const register = async ({
-    name,
-    username,
-    office_department,
-    position,
-    salary,
-    email,
-    password,
-    role = "teacher",
-  }) => {
-    try {
-      const data = await registerUser({
-        name,
-        username: username.trim(),
-        office_department,
-        position,
-        salary,
-        email: email.trim(),
-        password,
-        role,
-      });
-
-      if (data) {
-        setUser({
-          _id: data._id,
-          username: data.username,
-          email: data.email,
-          role: data.role,
-          name: data.name,
-          office_department: data.office_department,
-          position: data.position,
-          salary: data.salary,
-          token: data.token,
-        });
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Registration error:", error);
-      return null;
-    }
-  };
+  loadUser();
+}, []);
 
 
-  const logout = () => setUser(null);
+  console.log('Authcontext state: ', state)
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
-      {children}
+    <AuthContext.Provider value={{...state, dispatch}}>
+      { children }
     </AuthContext.Provider>
-  );
-};
+  )
 
-export const useAuth = () => useContext(AuthContext);
+}

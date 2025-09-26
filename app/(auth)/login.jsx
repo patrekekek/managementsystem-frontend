@@ -1,34 +1,35 @@
-// app/auth/login.jsx
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { useAuth } from "../../context/AuthContext";
 import { router } from 'expo-router';
+import { useAuthContext } from "../../hooks/useAuthContext";
+
+
+//hooks
+import { useLogin } from "../../hooks/useLogin";
 
 export default function Login() {
-  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const { login, error, isLoading } = useLogin();
+  const { user } = useAuthContext();
 
 
-  const handleLogin = () => {
-    const success = login(username, password);
+  const handleLogin = async () => {
+    await login(username, password);
 
-    if (success) {
-      if (success.role === "admin") {
-        router.replace("/admin/dashboard");
-
-      } else if (success.role === "teacher") {
-        router.replace("/(tabs)/teacher/dashboard")
-      }
-      // router.replace("/(tabs)/teacher/dashboard");
-      // setError("");
-    } else {
-      setError("Invalid username or password");
-    }
-
-    console.log(success, "bilat");
   };
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === "teacher") {
+        router.replace("/(tabs)/teacher/dashboard"); // replace instead of push
+      } else if (user.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [user]);
 
 
   return (
@@ -53,8 +54,14 @@ export default function Login() {
           onChangeText={setPassword}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log In</Text>
+        <TouchableOpacity 
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Logging in..." : "Log In"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

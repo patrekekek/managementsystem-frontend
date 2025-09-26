@@ -1,11 +1,13 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Button } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/AuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
+import { useLogout } from "../hooks/useLogout";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useAuth(); // you already have AuthContext
+  const { user } = useAuthContext();
+  const { logout } = useLogout();
 
   return (
     <View style={styles.container}>
@@ -13,19 +15,20 @@ export default function HomeScreen() {
       <Text style={styles.subtitle}>
         Please log in or register.
       </Text>
+       <Button title="Log out" onPress={logout} />
 
       {!user ? (
         <>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push("/auth/login")}
+            onPress={() => router.push("/login")}
           >
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
-            onPress={() => router.push("/auth/register")}
+            onPress={() => router.push("/register")}
           >
             <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
