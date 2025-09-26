@@ -14,11 +14,11 @@ import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 
 import { useLeaves } from "../../../context/LeaveContext";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuthContext } from "../../../hooks/useAuthContext";
 
 export default function FileLeave() {
   const { fileLeave } = useLeaves();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const router = useRouter();
 
   const [leaveType, setLeaveType] = useState("");

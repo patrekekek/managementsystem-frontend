@@ -17,28 +17,36 @@ export default function TeacherLayout() {
         name="dashboard"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="file-leave"
         options={{
           title: "File Leave",
-          tabBarIcon: ({ color, size }) => <Ionicons name="create-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="create-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="my-leaves"
         options={{
           title: "My Leaves",
-          tabBarIcon: ({ color, size }) => <Ionicons name="list-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="leave-history"
         options={{
           title: "Leave History",
-          tabBarIcon: ({ color, size }) => <Ionicons name="time-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time-outline" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

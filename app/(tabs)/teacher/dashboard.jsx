@@ -1,4 +1,3 @@
-// app/(tabs)/teacher/dashboard.jsx
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useAuthContext } from "../../../hooks/useAuthContext";

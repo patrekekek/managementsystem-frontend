@@ -10,10 +10,12 @@ import {
   Platform,
 } from "react-native";
 import { router } from "expo-router";
-import { useAuth } from "../../context/AuthContext";
+
+import { useRegister } from "../../hooks/useRegister";
+
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, isLoading, error } = useRegister();
   const [name, setName] = useState({ first: "", middle: "", last: "" });
   const [username, setUsername] = useState("");
   const [office, setOffice] = useState("");
@@ -22,7 +24,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -30,7 +31,6 @@ export default function RegisterPage() {
       return;
     }
 
-    setError("");
     const data = await register({
       name: {
         first: (name.first || "").trim(),
@@ -49,8 +49,6 @@ export default function RegisterPage() {
     if (data) {
       alert("Registration successful");
       router.replace("../(tabs)/teacher/dashboard");
-    } else {
-      setError("Registration failed");
     }
   };
 
@@ -156,9 +154,16 @@ export default function RegisterPage() {
         />
 
         {/* Register Button */}
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
+        <TouchableOpacity
+          style={[styles.button, isLoading && { opacity: 0.6 }]}
+          onPress={handleRegister}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Registering..." : "Register"}
+          </Text>
         </TouchableOpacity>
+
 
         {/* Back to Login */}
         <TouchableOpacity onPress={() => router.replace("/auth/login")}>
