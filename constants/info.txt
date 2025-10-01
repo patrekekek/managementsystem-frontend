@@ -1,0 +1,60 @@
+1. Office department
+2. Name
+	2a. Last
+	2b. First
+	2c. Middle
+3. Date of Filing (current Date)
+4. Position
+5. Salary
+6. Types of leave to be availed
+	6a. Vacation Leave
+		6a.1. Within the Philippines Specify ___________
+		6a.2 Abroad: Specify ___________
+	6b. Mandatory/Forced Leave
+	6c. Sick Leave
+		6c.1 In hospital: Specify Ilness ______________
+		6c.2 Out Patient: Specify Illness _____________
+	6d. Maternity Leave
+	6e. Paternity Leave
+	6f. Special Privilege Leave
+	6g. Solo Parent Leave
+	6h. Study Leave
+		6h.1 Completion of Master’s Degree (another roller option)
+		6h.2 BAR/Board Exam Review (another roller option)
+	6i. 10-day VAWC Law
+	6j. Rehabilitation Privelege
+	6k. Special Leave Benefits for Women: Specify Illness
+	6l. Special Emergency (Calamity) Leave
+	6m. Adoption Leave
+	6n. Others
+		6n.1 Monetization of Leave Credits (another roller option)
+		6n.2 Terminal Leave (another roller option)
+7. Number of Working Days Applied For
+8. Inclusive Dates
+	8a. Start Date
+	8b. End Date
+
+
+
+
+{
+  "user": "68d3cd5d894d0f6dd55abaef",
+  "officeDepartment": "Default Dept",
+  "name.first": "Nilo",
+  "name.last": "Butay",
+  "name.middle": "S", 
+  "position": "Teacher I",
+  "salary": 32000,
+  "leave_type": "sick",
+  "numberOfDays": 2,
+  "startDate": "2025-10-08",
+  "endDate": "2025-10-09",
+  "vacation": "",
+  "sick": {
+    "type": "outpatient",
+    "illness": "Fever"
+  },
+  "study": {},
+  "others": {},
+  "status": "pending"
+}

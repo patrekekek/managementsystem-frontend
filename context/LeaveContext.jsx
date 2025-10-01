@@ -4,7 +4,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { API_URL } from "../config";
 
 
-const LeaveContext = createContext();
+export const LeaveContext = createContext();
 
 const leaveReducer = (state, action) => {
 
