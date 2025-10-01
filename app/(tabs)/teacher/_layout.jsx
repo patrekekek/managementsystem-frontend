@@ -41,11 +41,11 @@ export default function TeacherLayout() {
         }}
       />
       <Tabs.Screen
-        name="leave-history"
+        name="profile"
         options={{
-          title: "Leave History",
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+            <Ionicons name="person-circle-outline" size={size} color={color} />
           ),
         }}
       />
