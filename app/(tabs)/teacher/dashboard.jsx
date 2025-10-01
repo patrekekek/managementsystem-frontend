@@ -17,7 +17,7 @@ export default function TeacherDashboard() {
 
   const handleLogout = () => {
     logout();
-    router.replace("/")
+    router.replace("/login")
   }
 
   return (

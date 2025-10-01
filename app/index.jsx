@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Button } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthContext } from "../hooks/useAuthContext";
@@ -8,6 +8,9 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
   const { logout } = useLogout();
+
+
+
 
   return (
     <View style={styles.container}>
