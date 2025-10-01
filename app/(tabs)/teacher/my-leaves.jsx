@@ -1,45 +1,54 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import LeaveCard from "../../../components/LeaveCard";
+import useGetLeaves from "../../../hooks/useGetLeaves";
+import { useRouter } from "expo-router";
+import { TouchableOpacity } from "react-native";
 
 export default function MyLeaves() {
-  // Mock data – later you can fetch from backend
-  const [myLeaves, setMyLeaves] = useState([
-    { id: "1", type: "Vacation Leave", date: "2025-09-01", status: "Approved" },
-    { id: "2", type: "Sick Leave", date: "2025-09-05", status: "Pending" },
-    { id: "3", type: "Emergency Leave", date: "2025-09-08", status: "Rejected" },
-  ]);
+  const { leaves, loading, error } = useGetLeaves();
+  const router = useRouter();
 
-  const renderLeave = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.type}>{item.type}</Text>
-      <Text style={styles.date}>{item.date}</Text>
-      <Text
-        style={[
-          styles.status,
-          item.status === "Approved"
-            ? styles.approved
-            : item.status === "Rejected"
-            ? styles.rejected
-            : styles.pending,
-        ]}
-      >
-        {item.status}
-      </Text>
-    </View>
-  );
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "red" }}>❌ {error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📋 My Leaves</Text>
 
       <FlatList
-        data={myLeaves}
-        keyExtractor={(item) => item.id}
-        renderItem={renderLeave}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No leave records found.</Text>
-        }
+        data={leaves}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/leave-details/[id]",
+                params: { id: item._id }, // pass leave id
+              })
+            }
+          >
+            <LeaveCard
+              type={item.leaveType}
+              date={new Date(item.startDate).toLocaleDateString()}
+              status={item.status || "Pending"}
+            />
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={<Text style={styles.empty}>No leave records found.</Text>}
       />
     </View>
   );
@@ -58,45 +67,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#333",
   },
-  card: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  type: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-  },
-  date: {
-    fontSize: 14,
-    color: "#666",
-    marginVertical: 4,
-  },
-  status: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginTop: 6,
-  },
-  approved: {
-    color: "green",
-  },
-  pending: {
-    color: "orange",
-  },
-  rejected: {
-    color: "red",
-  },
   empty: {
     fontSize: 16,
     color: "#999",
     textAlign: "center",
     marginTop: 50,
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

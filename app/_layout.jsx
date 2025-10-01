@@ -12,6 +12,14 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="admin" options={{ headerShown: false }} />
+                    <Stack.Screen
+            name="leave-details/[id]"
+            options={{
+              headerShown: true,
+              title: "Leave Details",
+              headerBackTitle: "Back",
+            }}
+          />
         </Stack>
       </LeaveProvider>
     </AuthContextProvider>
