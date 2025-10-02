@@ -9,7 +9,15 @@ export default function HomeScreen() {
   const { user } = useAuthContext();
   const { logout } = useLogout();
 
-
+  // useEffect(() => {
+  //   if (!user) {
+  //     router.replace("/login");   // force login if no user
+  //   } else if (user.role === "teacher") {
+  //     router.replace("/(tabs)/teacher/dashboard");
+  //   } else if (user.role === "admin") {
+  //     router.replace("/admin/leave-requests");
+  //   }
+  // }, [user]);
 
 
   return (

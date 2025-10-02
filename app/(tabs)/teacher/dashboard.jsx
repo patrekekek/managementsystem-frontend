@@ -1,13 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 import { useLogout } from "../../../hooks/useLogout";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // make sure expo install react-native-vector-icons
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TeacherDashboard() {
   const { user } = useAuthContext();
   const { logout } = useLogout();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      router.replace("/login"); // redirect when user becomes null
+    }
+  }, [user]);
 
   const recentActivity = [
     { id: "1", message: "Sick Leave approved (Sept 14)" },
