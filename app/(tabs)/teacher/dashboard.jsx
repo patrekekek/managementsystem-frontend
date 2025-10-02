@@ -1,26 +1,41 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 import { useLogout } from "../../../hooks/useLogout";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { API_URL } from "../../../config"
 
 export default function TeacherDashboard() {
   const { user } = useAuthContext();
   const { logout } = useLogout();
   const router = useRouter();
 
+  const [recentActivity, setRecentActivity] = useState([]);
+
   useEffect(() => {
     if (!user) {
       router.replace("/login"); // redirect when user becomes null
     }
-  }, [user]);
 
-  const recentActivity = [
-    { id: "1", message: "Sick Leave approved (Sept 14)" },
-    { id: "2", message: "Vacation Leave pending (Sept 10)" },
-    { id: "3", message: "Filed Emergency Leave (Sept 5)" },
-  ];
+    const fetchRecentLeaves = async () => {
+      try {
+        const res = await fetch(`${API_URL}/leaves/my/recent`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+        const data = await res.json();
+        if (!data.error) {
+          setRecentActivity(data);
+        }
+      } catch (err) {
+        console.error("Failed to load recent leaves:", err);
+      }
+    };
+
+      fetchRecentLeaves();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -84,9 +99,11 @@ export default function TeacherDashboard() {
         <Text style={styles.cardTitle}>Recent Activity</Text>
         <FlatList
           data={recentActivity}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <Text style={styles.activityItem}>• {item.message}</Text>
+            <Text style={styles.activityItem}>
+              • {item.leaveType} leave filed ({new Date(item.startDate).toLocaleDateString()} → {new Date(item.endDate).toLocaleDateString()})
+            </Text>
           )}
         />
       </View>
