@@ -63,6 +63,15 @@ export default function Login() {
             {isLoading ? "Logging in..." : "Log In"}
           </Text>
         </TouchableOpacity>
+
+
+        <TouchableOpacity onPress={() => router.push("/register")}>
+          <Text style={styles.registerText}>
+            Don’t have an account? Register
+          </Text>
+        </TouchableOpacity>
+
+
       </View>
     </View>
   );
@@ -116,5 +125,11 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 10,
     textAlign: "center",
+  },
+  registerText: {
+    marginTop: 10,
+    textAlign: "center",
+    color: "#007BFF",
+    fontSize: 16,
   },
 });

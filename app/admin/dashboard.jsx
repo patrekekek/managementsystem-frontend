@@ -1,12 +1,13 @@
-// app/admin/dashboard.jsx
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthContext } from "../../hooks/useAuthContext";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLogout } from "../../hooks/useLogout"
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuthContext();
+  const { logout } = useLogout();
 
   const pendingRequests = [
     { id: "1", teacher: "Mr. Cruz", type: "Sick Leave", date: "Sept 14" },

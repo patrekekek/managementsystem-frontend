@@ -18,6 +18,7 @@ export default function TeacherDashboard() {
       router.replace("/login"); // redirect when user becomes null
     }
 
+    //make this into hook
     const fetchRecentLeaves = async () => {
       try {
         const res = await fetch(`${API_URL}/leaves/my/recent`, {

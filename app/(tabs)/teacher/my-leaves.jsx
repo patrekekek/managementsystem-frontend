@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import LeaveCard from "../../../components/LeaveCard";
-import useGetLeaves from "../../../hooks/useGetLeaves";
+import useFetchTeacherLeaves from "../../../hooks/useFetchTeacherLeaves";
 import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
 
 export default function MyLeaves() {
-  const { leaves, loading, error } = useGetLeaves();
+  const { leaves, loading, error } = useFetchTeacherLeaves();
   const router = useRouter();
 
   if (loading) {

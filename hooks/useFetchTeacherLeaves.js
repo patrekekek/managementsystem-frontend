@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config";
 
-export default function useGetLeaves() {
+export default function useFetchTeacherLeaves() {
     const [leaves, setLeaves] = useState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
