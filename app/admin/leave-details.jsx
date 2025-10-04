@@ -1,22 +1,52 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 export default function LeaveDetails() {
-  // Mock leave data — in real app, pass this via navigation params or fetch from backend
-  const [leave, setLeave] = useState({
-    id: "1",
-    teacher: "Juan Dela Cruz",
-    type: "Vacation Leave",
-    startDate: "2025-09-20",
-    endDate: "2025-09-22",
-    reason: "Family outing",
-    status: "Pending",
-  });
+  const { id } = useLocalSearchParams(); // leaveId passed via navigation
+  const [leave, setLeave] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleDecision = (decision) => {
-    setLeave({ ...leave, status: decision });
-    Alert.alert("Success", `Leave has been ${decision}.`);
+
+
+  useEffect(() => {
+    fetchLeave();
+  }, []);
+
+  const handleDecision = async (decision) => {
+    try {
+      const userData = await AsyncStorage.getItem("user");
+      const { token } = JSON.parse(userData);
+
+      const endpoint =
+        decision === "Approved"
+          ? `${API_URL}/leaves/${id}/approve`
+          : `${API_URL}/leaves/${id}/reject`;
+
+      const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to update leave");
+      setLeave({ ...leave, status: decision });
+      Alert.alert("Success", `Leave has been ${decision.toLowerCase()}.`);
+    } catch (err) {
+      Alert.alert("Error", err.message);
+    }
   };
+
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="blue" />;
+
+  if (!leave) return <Text style={{ textAlign: "center", marginTop: 20 }}>Leave not found.</Text>;
 
   return (
     <View style={styles.container}>
@@ -24,18 +54,20 @@ export default function LeaveDetails() {
 
       <View style={styles.card}>
         <Text style={styles.label}>Teacher:</Text>
-        <Text style={styles.value}>{leave.teacher}</Text>
+        <Text style={styles.value}>
+          {leave.name.first} {leave.name.last}
+        </Text>
 
         <Text style={styles.label}>Type:</Text>
-        <Text style={styles.value}>{leave.type}</Text>
+        <Text style={styles.value}>{leave.leaveType}</Text>
 
         <Text style={styles.label}>Duration:</Text>
         <Text style={styles.value}>
-          {leave.startDate} → {leave.endDate}
+          {new Date(leave.startDate).toDateString()} → {new Date(leave.endDate).toDateString()}
         </Text>
 
         <Text style={styles.label}>Reason:</Text>
-        <Text style={styles.value}>{leave.reason}</Text>
+        <Text style={styles.value}>{leave.reason || "—"}</Text>
 
         <Text style={styles.label}>Current Status:</Text>
         <Text
@@ -74,18 +106,8 @@ export default function LeaveDetails() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f4f6f9",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 20,
-    color: "#333",
-  },
+  container: { flex: 1, backgroundColor: "#f4f6f9", padding: 20 },
+  title: { fontSize: 24, fontWeight: "700", textAlign: "center", marginBottom: 20, color: "#333" },
   card: {
     backgroundColor: "#fff",
     padding: 20,
@@ -96,34 +118,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 10,
-    color: "#444",
-  },
-  value: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 6,
-  },
-  approved: {
-    color: "green",
-    fontWeight: "bold",
-  },
-  pending: {
-    color: "orange",
-    fontWeight: "bold",
-  },
-  rejected: {
-    color: "red",
-    fontWeight: "bold",
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
-  },
+  label: { fontSize: 16, fontWeight: "600", marginTop: 10, color: "#444" },
+  value: { fontSize: 16, color: "#333", marginBottom: 6 },
+  approved: { color: "green", fontWeight: "bold" },
+  pending: { color: "orange", fontWeight: "bold" },
+  rejected: { color: "red", fontWeight: "bold" },
+  actions: { flexDirection: "row", justifyContent: "space-around", marginTop: 20 },
   button: {
     flex: 1,
     marginHorizontal: 10,
@@ -131,15 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  approveBtn: {
-    backgroundColor: "green",
-  },
-  rejectBtn: {
-    backgroundColor: "red",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  approveBtn: { backgroundColor: "green" },
+  rejectBtn: { backgroundColor: "red" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
