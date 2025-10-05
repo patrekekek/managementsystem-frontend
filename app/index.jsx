@@ -1,114 +1,34 @@
 import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Button } from "react-native";
 import { useRouter } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useLogout } from "../hooks/useLogout";
 
-export default function HomeScreen() {
+export default function Index() {
+  const { user, loading } = useAuthContext();
   const router = useRouter();
-  const { user } = useAuthContext();
-  const { logout } = useLogout();
 
-  // useEffect(() => {
-  //   if (!user) {
-  //     router.replace("/login");   // force login if no user
-  //   } else if (user.role === "teacher") {
-  //     router.replace("/(tabs)/teacher/dashboard");
-  //   } else if (user.role === "admin") {
-  //     router.replace("/admin/leave-requests");
-  //   }
-  // }, [user]);
-
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        // navigate to dashboard or tabs layout
+        router.replace("/(tabs)/teacher/dashboard");
+      } else {
+        // go to login page
+        router.replace("/(auth)/login");
+      }
+    }
+  }, [user, loading]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to JLNHS Leave Management App, Cher!</Text>
-      <Text style={styles.subtitle}>
-        Please log in or register.
-      </Text>
-       <Button title="Log out" onPress={logout} />
-
-      {!user ? (
-        <>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push("/login")}
-          >
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.secondaryButton]}
-            onPress={() => router.push("/register")}
-          >
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.welcome}>Hello, {user?.name?.first ?? user?.email ?? "User"}!</Text>
-
-          {user.role === "teacher" && (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => router.push("/(tabs)/teacher")}
-            >
-              <Text style={styles.buttonText}>Go to Teacher Dashboard</Text>
-            </TouchableOpacity>
-          )}
-
-          {user.role === "admin" && (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => router.push("/admin/leave-requests")}
-            >
-              <Text style={styles.buttonText}>Go to Admin Dashboard</Text>
-            </TouchableOpacity>
-          )}
-        </>
-      )}
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+      }}
+    >
+      <ActivityIndicator size="large" color="#007AFF" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f5f5f5",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#555",
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  welcome: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 10,
-    marginBottom: 15,
-    width: "80%",
-  },
-  secondaryButton: {
-    backgroundColor: "#2196F3",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-});

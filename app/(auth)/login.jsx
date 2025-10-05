@@ -24,7 +24,7 @@ export default function Login() {
       if (user.role === "teacher") {
         router.replace("/(tabs)/teacher/dashboard"); // replace instead of push
       } else if (user.role === "admin") {
-        router.replace("/admin/dashboard");
+        router.replace("/(adminTabs)/dashboard");
       } else {
         router.replace("/");
       }

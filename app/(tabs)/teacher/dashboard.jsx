@@ -7,19 +7,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../../../config"
 
 export default function TeacherDashboard() {
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
   const { logout } = useLogout();
   const router = useRouter();
 
+  const [leaves, setLeaves] = useState([]);
+
   const [recentActivity, setRecentActivity] = useState([]);
 
+
   useEffect(() => {
-    if (!user) {
-      router.replace("/login"); // redirect when user becomes null
+    if (!loading && !user) {
+      router.replace("/(auth)/login"); // adjust path if login is not under (auth)
     }
+  }, [user, loading]);
+
+  useEffect(() => {
 
     //make this into hook
     const fetchRecentLeaves = async () => {
+      if (!user || loading) return;
+
       try {
         const res = await fetch(`${API_URL}/leaves/my/recent`, {
           headers: {
@@ -27,20 +35,21 @@ export default function TeacherDashboard() {
           },
         });
         const data = await res.json();
-        if (!data.error) {
-          setRecentActivity(data);
-        }
-      } catch (err) {
-        console.error("Failed to load recent leaves:", err);
+        setLeaves(data);
+      } catch (error) {
+        console.error("Failed to load recent leaves:", error);
       }
     };
 
       fetchRecentLeaves();
-  }, [user]);
+  }, [user, loading]);
 
-  const handleLogout = () => {
-    logout();
-    router.replace("/login")
+  const handleLogout = async () => {
+    await logout();
+  }
+
+  if (loading) {
+    return <Text>Loading... </Text>
   }
 
   return (

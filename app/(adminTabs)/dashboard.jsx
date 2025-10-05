@@ -4,20 +4,41 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLogout } from "../../hooks/useLogout"
+import { useFetchAllLeaves } from "../../hooks/useFetchAllLeaves";
 
 export default function AdminDashboard() {
-  const { user } = useAuthContext();
+  const { user, loading } = useAuthContext();
   const { logout } = useLogout();
-
-  const pendingRequests = [
-    { id: "1", teacher: "Mr. Cruz", type: "Sick Leave", date: "Sept 14" },
-    { id: "2", teacher: "Ms. Reyes", type: "Vacation Leave", date: "Sept 12" },
-    { id: "3", teacher: "Mr. Santos", type: "Emergency Leave", date: "Sept 10" },
-  ];
+  const { leaves, error } = useFetchAllLeaves();
 
   const handleLogout = () => {
     logout();
     router.replace("/");
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading user...</Text>
+      </View>
+    )
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.center}>
+        <Text>No user found. Please log in again.</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "red" }}>Error: {error}</Text>
+      </View>
+    );
   }
 
   return (
@@ -35,13 +56,13 @@ export default function AdminDashboard() {
       </View>
 
       <Text style={styles.subText}>
-          You have {pendingRequests.length} pending requests
+          You have {leaves.length} pending requests
       </Text>
 
       {/* Quick Stats */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Quick Stats</Text>
-        <Text style={styles.stat}>Pending Approvals: {pendingRequests.length}</Text>
+        <Text style={styles.stat}>Pending Approvals: {leaves.length}</Text>
         <Text style={styles.stat}>Approved This Month: 12</Text>
         <Text style={styles.stat}>Rejected This Month: 3</Text>
       </View>
@@ -50,7 +71,7 @@ export default function AdminDashboard() {
       <View style={styles.actionsContainer}>
         <TouchableOpacity
           style={styles.actionCard}
-          onPress={() => router.push("/admin/leave-details")}
+          onPress={() => router.push("/(adminTabs)/leaveDetails")}
         >
           <Ionicons name="list-outline" size={24} color="#2196F3" />
           <Text style={styles.actionLabel}>View All Requests</Text>
@@ -58,30 +79,24 @@ export default function AdminDashboard() {
 
         <TouchableOpacity
           style={styles.actionCard}
-          onPress={() => router.push("/admin/manage-teachers")}
+          onPress={() => router.push("/(adminTabs)/manageTeachers")}
         >
           <Ionicons name="people-outline" size={24} color="#4CAF50" />
           <Text style={styles.actionLabel}>Manage Teachers</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => router.push("/admin/reports")}
-        >
-          <Ionicons name="analytics-outline" size={24} color="#FF9800" />
-          <Text style={styles.actionLabel}>Reports</Text>
-        </TouchableOpacity>
+
       </View>
 
       {/* Pending Requests */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Pending Requests</Text>
         <FlatList
-          data={pendingRequests}
-          keyExtractor={(item) => item.id}
+          data={leaves}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <Text style={styles.requestItem}>
-              • {item.teacher} filed {item.type} ({item.date})
+              • {item.name.first} {item.name.last} filed {item.leaveType}
             </Text>
           )}
         />

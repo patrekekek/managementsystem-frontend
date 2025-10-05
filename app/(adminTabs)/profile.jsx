@@ -1,3 +1,4 @@
+// app/(tabs)/teacher/profile.jsx
 import React, { useState } from "react";
 import {
   View,
@@ -8,12 +9,12 @@ import {
 } from "react-native";
 
 export default function Profile() {
-  const [name] = useState("Juan Dela Cruz");
+  const [name] = useState("Juan Dela Cruz"); 
   const [bio, setBio] = useState("");
   const [feeling, setFeeling] = useState("");
 
   const handleSave = () => {
-    // TODO: upload to backend or save to AsyncStorage
+
     alert("Profile updated (local only).");
   };
 
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   avatarBox: {
     width: 110,
     height: 110,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "lightblue",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 12,
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "lightblue",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",

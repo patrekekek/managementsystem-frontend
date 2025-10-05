@@ -19,7 +19,7 @@ export default function LeaveDetails() {
   renderItem={({ item }) => (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => router.push(`/admin/${item._id}`)} // navigate to detail page
+      onPress={() => router.push(`/(adminTabs)/${item._id}`)} // navigate to detail page
     >
       <Text style={styles.title}>
         {item.name.last}, {item.name.first}

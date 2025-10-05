@@ -42,7 +42,7 @@ useEffect(() => {
   console.log('Authcontext state: ', state)
 
   return (
-    <AuthContext.Provider value={{...state, dispatch}}>
+    <AuthContext.Provider value={{...state, dispatch, loading}}>
       { children }
     </AuthContext.Provider>
   )
