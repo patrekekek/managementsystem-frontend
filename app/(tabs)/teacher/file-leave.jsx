@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
 
 // hooks
 import { useAuthContext } from "../../../hooks/useAuthContext";
@@ -41,6 +43,11 @@ export default function FileLeave() {
 
   const [showModal, setShowModal] = useState(false);
 
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const [tempStartDate, setTempStartDate] = useState(new Date());
+  const [tempEndDate, setTempEndDate] = useState(new Date());
 
   const getNumberOfDays = (start, end) => {
     const startDateObj = new Date(start);
@@ -151,6 +158,16 @@ export default function FileLeave() {
     } catch (error) {
       Alert.alert("Error", error.message);
     }
+  };
+
+  const handleAndroidChange = (event, selectedDate, type) => {
+    if (selectedDate) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      if (type === "start") setStartDate(formattedDate);
+      else setEndDate(formattedDate);
+    }
+    if (type === "start") setShowStartPicker(false);
+    else setShowEndPicker(false);
   };
 
   if (!user) {
@@ -311,21 +328,132 @@ export default function FileLeave() {
       /> */}
 
       {/* Start & End Dates */}
+<View style={styles.container}>
       <Text style={styles.label}>Start Date</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="YYYY-MM-DD"
-        value={startDate}
-        onChangeText={setStartDate}
-      />
+      <TouchableOpacity
+        onPress={() => {
+          setShowStartPicker(true);
+          setTempStartDate(startDate ? new Date(startDate) : new Date());
+        }}
+        style={styles.dateBox}
+      >
+        <Text style={styles.dateText}>
+          {startDate ? startDate : "Select start date"}
+        </Text>
+      </TouchableOpacity>
 
       <Text style={styles.label}>End Date</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="YYYY-MM-DD"
-        value={endDate}
-        onChangeText={setEndDate}
-      />
+      <TouchableOpacity
+        onPress={() => {
+          setShowEndPicker(true);
+          setTempEndDate(endDate ? new Date(endDate) : new Date());
+        }}
+        style={styles.dateBox}
+      >
+        <Text style={styles.dateText}>
+          {endDate ? endDate : "Select end date"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Android Pickers */}
+      {showStartPicker && Platform.OS === "android" && (
+        <DateTimePicker
+          value={startDate ? new Date(startDate) : new Date()}
+          mode="date"
+          display="spinner"
+          onChange={(event, selectedDate) =>
+            handleAndroidChange(event, selectedDate, "start")
+          }
+        />
+      )}
+
+      {showEndPicker && Platform.OS === "android" && (
+        <DateTimePicker
+          value={endDate ? new Date(endDate) : new Date()}
+          mode="date"
+          display="spinner"
+          onChange={(event, selectedDate) =>
+            handleAndroidChange(event, selectedDate, "end")
+          }
+        />
+      )}
+
+      {/* iOS Start Picker */}
+      {showStartPicker && Platform.OS === "ios" && (
+        <Modal transparent animationType="slide" visible={showStartPicker}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <View style={styles.pickerContainer}>
+                <DateTimePicker
+                  value={tempStartDate}
+                  mode="date"
+                  display="spinner"
+                  themeVariant="light" // ensures visible text
+                  textColor="#000" // visible even if system dark mode
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) setTempStartDate(selectedDate);
+                  }}
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity onPress={() => setShowStartPicker(false)}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    const formattedDate = tempStartDate.toISOString().split("T")[0];
+                    setStartDate(formattedDate);
+                    setShowStartPicker(false);
+                  }}
+                >
+                  <Text style={styles.doneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* iOS End Picker */}
+      {showEndPicker && Platform.OS === "ios" && (
+        <Modal transparent animationType="slide" visible={showEndPicker}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <View style={styles.pickerContainer}>
+                <DateTimePicker
+                  value={tempEndDate}
+                  mode="date"
+                  display="spinner"
+                  themeVariant="light"
+                  textColor="#000"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) setTempEndDate(selectedDate);
+                  }}
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity onPress={() => setShowEndPicker(false)}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    const formattedDate = tempEndDate.toISOString().split("T")[0];
+                    setEndDate(formattedDate);
+                    setShowEndPicker(false);
+                  }}
+                >
+                  <Text style={styles.doneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
+
+
 
       {/* Submit */}
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
@@ -379,4 +507,80 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 15,
   },
   closeButton: { alignSelf: "flex-end", marginBottom: 10 },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
+    backgroundColor: "#fff",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+  },
+  cancelText: {
+    color: "red",
+    fontSize: 16,
+  },
+  doneText: {
+    color: "#007BFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  container: {
+    padding: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  dateBox: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    padding: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  cancelText: {
+    color: "red",
+    fontSize: 16,
+  },
+  doneText: {
+    color: "blue",
+    fontSize: 16,
+  },
 });

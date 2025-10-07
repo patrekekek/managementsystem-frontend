@@ -1,5 +1,5 @@
 import React, { useState , useEffect, useRef} from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { router } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons"
 
@@ -36,66 +36,71 @@ export default function Login() {
 
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome, cher!</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Welcome, cher!</Text>
 
-      <View style={styles.card}>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <View style={styles.card}>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          returnKeyType="next"
-          onSubmitEditing={() => {
-            passwordInputRef.current.focus()
-          }}
-        />
-
-        <View style={styles.passwordContainer}>
           <TextInput
-            style={[styles.passwordInput, { flex: 1, marginBottom: 0 }]}
-            placeholder="Password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            ref={passwordInputRef}
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
+            style={styles.input}
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+            returnKeyType="next"
+            onSubmitEditing={() => {
+              passwordInputRef.current.focus()
+            }}
           />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeButton}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={22}
-              color="#555"
+
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={[styles.passwordInput, { flex: 1, marginBottom: 0 }]}
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              ref={passwordInputRef}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
             />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeButton}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={22}
+                color="#555"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? "Logging in..." : "Log In"}
+            </Text>
           </TouchableOpacity>
+
+
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text style={styles.registerText}>
+              Don’t have an account? Register
+            </Text>
+          </TouchableOpacity>
+
+
         </View>
-
-        <TouchableOpacity 
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? "Logging in..." : "Log In"}
-          </Text>
-        </TouchableOpacity>
-
-
-        <TouchableOpacity onPress={() => router.push("/register")}>
-          <Text style={styles.registerText}>
-            Don’t have an account? Register
-          </Text>
-        </TouchableOpacity>
-
-
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

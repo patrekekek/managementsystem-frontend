@@ -166,7 +166,7 @@ export default function RegisterPage() {
 
 
         {/* Back to Login */}
-        <TouchableOpacity onPress={() => router.replace("/auth/login")}>
+        <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
           <Text style={styles.link}>Already have an account? Log In</Text>
         </TouchableOpacity>
       </ScrollView>
