@@ -7,17 +7,32 @@ export default function Index() {
   const { user, loading } = useAuthContext();
   const router = useRouter();
 
+
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // navigate to dashboard or tabs layout
-        router.replace("/(tabs)/teacher/dashboard");
+        if (user.role === "admin") {
+          router.replace("/(adminTabs)/dashboard")
+        } else {
+          router.replace("(tabs)/teacher/dashboard")
+        }
       } else {
-        // go to login page
         router.replace("/(auth)/login");
       }
     }
-  }, [user, loading]);
+  }, [user, loading])
+
+  // useEffect(() => {
+  //   if (!loading) {
+  //     if (user) {
+  //       // navigate to dashboard or tabs layout
+  //       router.replace("/(tabs)/teacher/dashboard");
+  //     } else {
+  //       // go to login page
+  //       router.replace("/(auth)/login");
+  //     }
+  //   }
+  // }, [user, loading]);
 
   return (
     <View

@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export const useLogin = () => {
+
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const { dispatch } = useAuthContext();
@@ -27,7 +28,6 @@ export const useLogin = () => {
 
         if (response.ok) {
             await AsyncStorage.setItem('user', JSON.stringify(json));
-            
             dispatch({type: 'LOGIN', payload: json});
             setIsLoading(false);
         }

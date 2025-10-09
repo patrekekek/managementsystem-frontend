@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { router } from "expo-router";
@@ -11,9 +11,15 @@ export default function AdminDashboard() {
   const { logout } = useLogout();
   const { leaves, error } = useFetchAllLeaves();
 
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/(auth)/login");
+    }
+  }, [user, loading]);
+
   const handleLogout = () => {
     logout();
-    router.replace("/");
   }
 
   if (loading) {

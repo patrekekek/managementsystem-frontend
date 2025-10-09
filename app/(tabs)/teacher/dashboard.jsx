@@ -11,14 +11,12 @@ export default function TeacherDashboard() {
   const { logout } = useLogout();
   const router = useRouter();
 
-  const [leaves, setLeaves] = useState([]);
-
   const [recentActivity, setRecentActivity] = useState([]);
 
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/(auth)/login"); // adjust path if login is not under (auth)
+      router.replace("/(auth)/login");
     }
   }, [user, loading]);
 
@@ -35,7 +33,7 @@ export default function TeacherDashboard() {
           },
         });
         const data = await res.json();
-        setLeaves(data);
+        setRecentActivity(data);
       } catch (error) {
         console.error("Failed to load recent leaves:", error);
       }
@@ -68,7 +66,6 @@ export default function TeacherDashboard() {
       </View>
 
       
-      <Text style={styles.subText}>You have 2 pending leave requests</Text>
 
       {/* Leave Summary */}
       <View style={styles.card}>
