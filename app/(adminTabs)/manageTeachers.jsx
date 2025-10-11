@@ -1,15 +1,28 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFetchTeachers } from "../../hooks/useFetchTeachers";
+import { router } from "expo-router";
 
 export default function ManageTeachers() {
-  // Temporary list of teachers
-  const [teachers] = useState([
-    { id: "1", name: "Juan Dela Cruz", department: "Mathematics" },
-    { id: "2", name: "Maria Santos", department: "Science" },
-    { id: "3", name: "Jose Rizal", department: "English" },
-    { id: "4", name: "Ana Lopez", department: "Filipino" },
-  ]);
+  const { teachers, loading, error } = useFetchTeachers();
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text>Loading teachers...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "red" }}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -17,31 +30,40 @@ export default function ManageTeachers() {
 
       <FlatList
         data={teachers}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.infoContainer}>
               <Ionicons name="person-circle-outline" size={40} color="#007AFF" />
               <View style={{ marginLeft: 10 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.department}>{item.department}</Text>
+                <Text style={styles.name}>
+                  {item.name
+                    ? `${item.name.first} ${item.name.middle ? item.name.middle[0] + ". " : ""}${item.name.last}`
+                    : item.username}
+                </Text>
+                <Text style={styles.department}>{item.office_department || "N/A"}</Text>
               </View>
             </View>
 
             <TouchableOpacity
               style={styles.viewButton}
-              onPress={() => console.log(`View details for ${item.name}`)}
+              onPress={() =>
+                router.push({
+                  pathname: "/details/teacherDetails",
+                  params: { id: item._id },
+                })
+              }
             >
               <Text style={styles.viewText}>View</Text>
             </TouchableOpacity>
           </View>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        showsVerticalScrollIndicator={false}
       />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
