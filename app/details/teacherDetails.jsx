@@ -40,7 +40,7 @@ export default function TeacherDetails() {
 
   return (
     <View style={styles.container}>
-      {/* ✅ Safe access */}
+      
       <Text style={styles.title}>
         {teacher?.name?.first} {teacher?.name?.last}
       </Text>

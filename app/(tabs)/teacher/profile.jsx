@@ -1,31 +1,121 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator
 } from "react-native";
+
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../../config";
 
 export default function Profile() {
   const [name] = useState("Juan Dela Cruz");
   const [bio, setBio] = useState("");
   const [feeling, setFeeling] = useState("");
+  const [profilePicture, setProfilePicture] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const { profilePicture } = JSON.parse(storedUser);
+          if (profilePicture) setProfilePicture(profilePicture);
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const pickImage = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission required", "Please allow photo access.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ fixed
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    try {
+
+      setUploading(true);
+
+      const image = result.assets[0];
+      const storedUser = await AsyncStorage.getItem("user");
+      if (!storedUser) return Alert.alert("Error", "No user found.");
+
+      const { token } = JSON.parse(storedUser);
+
+      const formData = new FormData();
+      formData.append("image", {
+        uri: image.uri,
+        type: "image/jpeg",
+        name: "profile.jpg",
+      });
+
+      const res = await fetch(`${API_URL}/users/upload-profile`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setProfilePicture(data.url);
+        const updatedUser = { ...JSON.parse(storedUser), profilePicture: data.url };
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+        Alert.alert("Success", "Profile photo updated!");
+      } else {
+        Alert.alert("Upload failed", data.error || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      Alert.alert("Error", "Could not upload image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
   const handleSave = () => {
-    // TODO: upload to backend or save to AsyncStorage
-    alert("Profile updated (local only).");
+    Alert.alert("Saved", "Profile updated locally.");
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>👤 My Profile</Text>
 
-
-      <TouchableOpacity style={styles.imageContainer}>
-        <View style={styles.avatarBox}>
-          <Text style={{ color: "#fff", fontWeight: "bold" }}>Add Photo</Text>
-        </View>
+      <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+        {uploading ? (
+          <ActivityIndicator size="large" color="#4CAF50" />  // ✅ spinner while uploading
+        ) : profilePicture ? (
+          <Image
+            source={{ uri: profilePicture }}
+            style={{ width: 110, height: 110, borderRadius: 12 }}
+          />
+        ) : (
+          <View style={styles.avatarBox}>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Add Photo</Text>
+          </View>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.label}>Full Name</Text>
