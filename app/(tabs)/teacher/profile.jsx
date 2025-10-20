@@ -14,8 +14,10 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../../config";
 
+import { useAuthContext } from "../../../hooks/useAuthContext";
+
 export default function Profile() {
-  const [name] = useState("Juan Dela Cruz");
+  const { user } = useAuthContext();
   const [bio, setBio] = useState("");
   const [feeling, setFeeling] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
@@ -26,8 +28,11 @@ export default function Profile() {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         if (storedUser) {
+          const userData = JSON.parse(storedUser);
           const { profilePicture } = JSON.parse(storedUser);
           if (profilePicture) setProfilePicture(profilePicture);
+          if (userData.bio) setBio(userData.bio);
+          if (userData.feeling) setFeeling(userData.feeling);
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
@@ -95,8 +100,37 @@ export default function Profile() {
   };
 
 
-  const handleSave = () => {
-    Alert.alert("Saved", "Profile updated locally.");
+  const handlePostBio = async () => {
+     try {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (!storedUser) return Alert.alert("Error", "No user found.");
+
+      const { token } = JSON.parse(storedUser);
+
+      const res = await fetch(`${API_URL}/users/update-bio`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bio, feeling }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+
+        const updatedUser = { ...JSON.parse(storedUser), bio: data.user.bio, feeling: data.user.feeling };
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+        Alert.alert("Success", "Your profile has been updated!");
+      } else {
+        Alert.alert("Error", data.error || "Update failed.");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      Alert.alert("Error", "Could not update profile.");
+    }
   };
 
   return (
@@ -119,7 +153,7 @@ export default function Profile() {
       </TouchableOpacity>
 
       <Text style={styles.label}>Full Name</Text>
-      <Text style={styles.readonlyInput}>{name}</Text>
+      <Text style={styles.readonlyInput}>{user?.name.first} {user?.name.middle ? user?.name.middle.charAt(0).toUpperCase() + "." : ""} {user?.name.last}</Text>
 
       <Text style={styles.label}>Bio</Text>
       <TextInput
@@ -138,7 +172,7 @@ export default function Profile() {
         placeholder="😊 Happy, 😓 Tired, 😍 Inspired..."
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
+      <TouchableOpacity style={styles.button} onPress={handlePostBio}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
     </View>
