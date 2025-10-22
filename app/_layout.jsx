@@ -7,7 +7,11 @@ export default function RootLayout() {
   return (
     <AuthContextProvider>
       <LeaveProvider>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ 
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: "horizontal"
+          }}>
           {/* 👇 SplashScreen will appear first when app opens */}
           <Stack.Screen name="SplashScreen" />
 
