@@ -46,6 +46,7 @@ export default function TeacherDashboard() {
     await logout();
   }
 
+
   if (loading) {
     return <Text>Loading... </Text>
   }

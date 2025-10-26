@@ -45,7 +45,6 @@ export default function LeaveDetails() {
           </TouchableOpacity>
         )}
       />
-
     </View>
   );
 }
