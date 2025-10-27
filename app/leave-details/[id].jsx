@@ -12,14 +12,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../../config";
 
-
-import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
-
+import { useDownloadExcel } from "../../hooks/useDownloadExcel";
 
 export default function LeaveDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { downloadExcel } = useDownloadExcel();
 
   const [leave, setLeave] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,33 +46,7 @@ export default function LeaveDetails() {
     fetchLeave();
   }, [id]);
 
-  const handleDownload = async (id) => {
-    try {
-      const userData = await AsyncStorage.getItem("user");
-      const { token } = JSON.parse(userData);
 
-      const downloadURL =  `${API_URL}/leaves/generate-excel/${id}`;
-      const fileUri = FileSystem.documentDirectory + `leave-${id}.xlsx`;
-
-      const response = await FileSystem.downloadAsync(downloadURL, fileUri, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("File downloaded to:", response.uri);
-
-
-      //share dialogue
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(response.uri);
-      } else {
-        alert("Sharing not available on this device")
-      }
-
-    } catch (error) {
-      console.error("Download failed", error);
-      alert("Failed to download the Excel file")
-    }
-  }
 
   if (loading) {
     return (
@@ -94,7 +66,7 @@ export default function LeaveDetails() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* ✅ Back Button */}
+      {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#333" />
         <Text style={styles.backText}>Back</Text>
@@ -185,7 +157,7 @@ export default function LeaveDetails() {
           padding: 10,
           borderRadius: 8,
         }}
-        onPress={() => handleDownload(leave._id)}
+        onPress={() => downloadExcel(`leaves/generate-excel/${id}`, `leave-${id}`)}
       >
         <Text style={{ color: "#fff", textAlign: "center" }}>Download Excel</Text>
       </TouchableOpacity>

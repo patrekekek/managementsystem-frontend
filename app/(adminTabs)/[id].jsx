@@ -5,12 +5,14 @@ import { useLocalSearchParams } from "expo-router";
 import { useFetchLeave } from "../../hooks/useFetchLeave";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { API_URL } from "../../config";
+import { useDownloadExcel } from "../../hooks/useDownloadExcel";
 
 export default function LeaveView() {
   const { id } = useLocalSearchParams();
   const { leave, loading, error, refetch } = useFetchLeave(id); // Make sure your hook can refetch data
   const [actionLoading, setActionLoading] = useState(false);
 
+  const { downloadExcel } = useDownloadExcel();
   const { user } = useAuthContext();
 
 
@@ -80,6 +82,20 @@ export default function LeaveView() {
           )}
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={{
+          marginTop: 20,
+          backgroundColor: "#007AFF",
+          padding: 10,
+          borderRadius: 8,
+        }}
+        onPress={() => downloadExcel(`leaves/generate-excel/${id}`, `leave-${id}`)}
+      >
+        <Text style={{ color: "#fff", textAlign: "center" }}>Download Excel</Text>
+      </TouchableOpacity>
+
+
     </View>
   );
 }
