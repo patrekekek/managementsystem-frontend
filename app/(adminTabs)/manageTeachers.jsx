@@ -1,11 +1,13 @@
 import React from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFetchTeachers } from "../../hooks/useFetchTeachers";
 import { router } from "expo-router";
 
 export default function ManageTeachers() {
   const { teachers, loading, error } = useFetchTeachers();
+
+  console.log('oten', teachers[1])
 
   if (loading) {
     return (
@@ -34,11 +36,19 @@ export default function ManageTeachers() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.infoContainer}>
-              <Ionicons name="person-circle-outline" size={40} color="#007AFF" />
+              {item.profilePicture ? (
+                <Image 
+                  source={{ uri:item.profilePicture}}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <Ionicons name="person-circle-outline" size={50} color="#007AFF" />
+              )}
+
               <View style={{ marginLeft: 10 }}>
                 <Text style={styles.name}>
                   {item.name
-                    ? `${item.name.first} ${item.name.middle ? item.name.middle[0] + ". " : ""}${item.name.last}`
+                    ? `${item.name.last}, ${item.name.first} ${item.name.middle ? item.name.middle[0] + ". " : ""} `
                     : item.username}
                 </Text>
                 <Text style={styles.department}>{item.office_department || "N/A"}</Text>
@@ -114,5 +124,11 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 10,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#e0e0e0",
   },
 });

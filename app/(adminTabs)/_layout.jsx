@@ -22,7 +22,7 @@ export default function AdminTabsLayout() {
         tabBarInactiveTintColor: "gray",
         tabBarStyle: {
           paddingBottom: Platform.OS === "ios" ? 10 : 6,
-          height: 60,
+          height: 70,
           borderTopLeftRadius: 15,
           borderTopRightRadius: 15,
         },
