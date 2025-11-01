@@ -12,12 +12,15 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config";
+import { useLogout } from "../hooks/useLogout";
 
 export default function ProfileForm({ user }) {
   const [bio, setBio] = useState("");
   const [feeling, setFeeling] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
   const [uploading, setUploading] = useState(false);
+
+  const { logout } = useLogout();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -127,6 +130,10 @@ export default function ProfileForm({ user }) {
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+  }
+
   return (
     <View>
       <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
@@ -171,6 +178,11 @@ export default function ProfileForm({ user }) {
       <TouchableOpacity style={styles.button} onPress={handlePostBio}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
+
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Log Out</Text>
+            </TouchableOpacity>
+
     </View>
   );
 }
@@ -217,4 +229,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+
+  logoutButton: {
+    backgroundColor: "#D1FFBD",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
 });

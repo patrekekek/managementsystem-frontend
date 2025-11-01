@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native
 import { useRouter } from "expo-router";
 import { useFetchAllLeaves } from "../../hooks/useFetchAllLeaves";
 
-export default function LeaveDetails() {
+export default function Leaves() {
   const router = useRouter();
   const { leaves, loading, error } = useFetchAllLeaves();
 
@@ -19,7 +19,7 @@ export default function LeaveDetails() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.item}
-            onPress={() => router.push(`/(adminTabs)/${item._id}`)} // navigate to detail page
+            onPress={() => router.push(`/(adminTabs)/leaveDetails/${item._id}`)} // navigate to detail page
           >
             <Text style={styles.title}>
               {item.name.last}, {item.name.first}

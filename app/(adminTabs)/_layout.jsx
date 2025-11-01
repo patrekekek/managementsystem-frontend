@@ -5,7 +5,6 @@ import { Platform, TouchableOpacity } from "react-native";
 export default function AdminTabsLayout() {
   const router = useRouter();
 
-
   const BackButton = () => (
     <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
       <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -16,13 +15,9 @@ export default function AdminTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        headerStyle: {
-          backgroundColor: "#007AFF",
-        },
+        headerStyle: { backgroundColor: "#007AFF" },
         headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
+        headerTitleStyle: { fontWeight: "bold" },
         tabBarActiveTintColor: "#007AFF",
         tabBarInactiveTintColor: "gray",
         tabBarStyle: {
@@ -34,7 +29,6 @@ export default function AdminTabsLayout() {
         headerLeft: () => <BackButton />,
       }}
     >
-
       <Tabs.Screen
         name="dashboard"
         options={{
@@ -45,17 +39,15 @@ export default function AdminTabsLayout() {
         }}
       />
 
-
       <Tabs.Screen
-        name="leaveDetails"
+        name="leaves"
         options={{
-          title: "Leave Details",
+          title: "Leaves",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="document-text-outline" color={color} size={size} />
           ),
         }}
       />
-
 
       <Tabs.Screen
         name="manageTeachers"
@@ -67,18 +59,6 @@ export default function AdminTabsLayout() {
         }}
       />
 
-
-      {/* <Tabs.Screen
-        name="report"
-        options={{
-          title: "Reports",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" color={color} size={size} />
-          ),
-        }}
-      /> */}
-
-
       <Tabs.Screen
         name="profile"
         options={{
@@ -89,14 +69,22 @@ export default function AdminTabsLayout() {
         }}
       />
 
+      {/* Hidden routes — no tab icons */}
       <Tabs.Screen
-        name="[id]"
+        name="leaveDetails/[id]"
         options={{
-          href: null,
+          href: null, // hide from tabs
           title: "Leave Details",
         }}
       />
 
+      <Tabs.Screen
+        name="teacherDetails/[id]"
+        options={{
+          href: null, // hide from tabs
+          title: "Teacher Details",
+        }}
+      />
     </Tabs>
   );
 }

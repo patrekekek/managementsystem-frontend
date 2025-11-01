@@ -49,7 +49,7 @@ export default function ManageTeachers() {
               style={styles.viewButton}
               onPress={() =>
                 router.push({
-                  pathname: "/details/teacherDetails",
+                  pathname: `/(adminTabs)/teacherDetails/${item._id}`,
                   params: { id: item._id },
                 })
               }
