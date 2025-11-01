@@ -7,8 +7,6 @@ import { router } from "expo-router";
 export default function ManageTeachers() {
   const { teachers, loading, error } = useFetchTeachers();
 
-  console.log('oten', teachers[1])
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -26,12 +24,18 @@ export default function ManageTeachers() {
     );
   }
 
+  const sortedTeachers = [...teachers].sort((a, b) => {
+    const nameA = a?.name?.last?.toLowerCase() || "";
+    const nameB = b?.name?.last?.toLowerCase() || "";
+    return nameA.localeCompare(nameB);
+  })
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Teachers List</Text>
 
       <FlatList
-        data={teachers}
+        data={sortedTeachers}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.card}>
