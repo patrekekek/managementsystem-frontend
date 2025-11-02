@@ -127,6 +127,10 @@ export default function FileLeave() {
         leaveType === "Study Leave"
           ? { mastersDegree: studyType === "masters", boardExamReview: studyType === "board" }
           : {},
+      mandatoryForcedLeave:
+        leaveType === "mandatory-forced"
+        ? {}
+        : {},
       others:
         leaveType === "Others"
           ? { monetization: othersType === "monetization", terminal: othersType === "terminal" }
@@ -328,7 +332,7 @@ export default function FileLeave() {
       /> */}
 
       {/* Start & End Dates */}
-<View style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.label}>Start Date</Text>
       <TouchableOpacity
         onPress={() => {

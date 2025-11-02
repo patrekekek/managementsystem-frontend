@@ -19,6 +19,7 @@ export const leaveList = [
 export const leaveTypeEnumMap = {
   "Vacation Leave": "vacation",
   "Sick Leave": "sick",
+  "Mandatory/Forced Leave": "mandatory-forced",
   "Maternity Leave": "maternity",
   "Paternity Leave": "paternity",
   "Special Privilege Leave": "special-privilege",
