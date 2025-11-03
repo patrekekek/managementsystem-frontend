@@ -1,103 +1,126 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useReducer} from "react";
-import NetInfo from "@react-native-community/netinfo";
+//note: will be refactored in the future to small hooks.
+
+import React, { createContext, useContext, useEffect, useReducer } from "react";
 import { API_URL } from "../config";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 
 export const LeaveContext = createContext();
 
-const leaveReducer = (state, action) => {
+const initialState = {
+  leaves: [],
+  loading: false,
+  error: null
+}
 
+const leaveReducer = (state, action) => {
   switch (action.type) {
-    case "FILE_LEAVE":
-      return [
-        ...state,
-        {
-          id: Date.now().toString(),
-          ...action.payload,
-          status: "pending",
-          synced: false,
-        }
-      ];
-    case "APPROVE_LEAVE":
-      return state.map((leave) => 
-        leave.id === action.payload
-          ? { ...leave, status: "approved"}
-          : leave
-      );
-    case "REJECT_LEAVE":
-      return state.map((leave) => 
-        leave.id === action.payload
-          ? { ...leave, status: "rejected"}
-          : leave
-      );
-    case "UPDATE_LEAVE":
-      return state.map((leave) =>
-        leave.id === action.payload.id ? { ...leave, ...action.payload } : leave
-      );
+    case "SET_LOADING":
+      return { ...state, loading: action.payload, error: null };
+
+    case "SET_ERROR":
+      return { ...state, loading: false, error: action.payload };
+
     case "SET_LEAVES":
-      return action.payload;
+      return { ...state, leaves: action.payload, loading: false, error: null}
+
+    case "UPDATE_STATUS":
+      return {
+        ...state,
+        leaves: state.leaves.map((leave) => 
+          leave._id === action.payload.id
+            ? { ...leave, status: action.payload.status }
+            : leave
+        ),
+      };
+      
     default:
       return state;
   }
 }
 
 export function LeaveProvider({ children }) {
-  const [leaves, dispatch] = useReducer(leaveReducer, []);
+  const [state, dispatch] = useReducer(leaveReducer, initialState);
+  const { user } = useAuthContext();
 
-  useEffect(() => {
-    const loadLeaves = async () => {
-      const stored = await AsyncStorage.getItem("leaves");
-      if (stored) {
-        dispatch({ type: "SET_LEAVES", payload: JSON.parse(stored) })
-      }
-    }
-    loadLeaves();
-  }, []);
+  const fetchLeaves = async () => {
+    dispatch({ type: "SET_LOADING" });
 
-  useEffect(() => {
-    AsyncStorage.setItem("leaves", JSON.stringify(leaves));
-  }, [leaves]);
+    try {
+      if (!user?.token) throw new Error("No authorization token found");
 
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      if (state.isConnected) {
-        syncLeaves();
-      }
-    });
-    return () =>  unsubscribe();
-  }, [leaves])
-
-  const syncLeaves = async () => {
-    for (let leave of leaves) {
-      if (!leave.synced) {
-        try {
-          const res = await fetch(`${API_URL}/leaves`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify(leave)
-          })
-
-          if (res.ok) {
-            const savedLeave = await res.json();
-            dispatch({
-              type: "UPDATE_LEAVE",
-              payload: { ...savedLeave, synced: true }
-            })
-          }
-        } catch (error) {
-          console.log("Sync failed for leave: ", leave.id, error.message);
+      const res = await fetch(`${API_URL}/leaves/all`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
         }
-      }
+      });
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
+
+      const data = await res.json();
+      dispatch({ type: "SET_LEAVES", payload: data })
+    } catch(error) {
+      dispatch({ type: "SET_ERROR", payload: error.message })
+      console.error("Error fetching leaves", error)
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false })
     }
   }
 
+  const updateLeaveStatus = async (id, status) => {
+    try {
+      const endpoint =
+        status === "approved" 
+        ? `${API_URL}/leaves/${id}/approve`
+        : `${API_URL}/leaves/${id}/reject`
+
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`
+        },
+      });
+
+      if (!res.ok) throw new Error(`Failed to update leave: ${res.statusText}`);
+
+      const updatedLeave = await res.json();
+
+      dispatch({
+        type: "UPDATE_STATUS",
+        payload: { id, status: updatedLeave.status },
+      })
+
+    } catch (error) {
+      dispatch({ type: "SET_ERROR", payload: error.message})
+      console.error("Error uploading status", error);
+    }
+  }
+
+  const approveLeave = (id) => updateLeaveStatus(id, "approved");
+  const rejectLeave = (id) => updateLeaveStatus(id, "rejected");
+
+  useEffect(() => {
+    if (user?.token) {
+      fetchLeaves();
+    }
+  }, [user])
 
   return (
-    <LeaveContext.Provider value={{ leaves, dispatch }}>
-      {children}
-    </LeaveContext.Provider>
-  );
-}
+    <LeaveContext.Provider 
+      value={{ 
+        leaves: state.leaves,
+        loading: state.loading,
+        error: state.error, 
+        fetchLeaves, 
+        updateLeaveStatus,
+        approveLeave,
+        rejectLeave 
 
-export const useLeaves = () => useContext(LeaveContext);
+      }}>
+      { children }
+    </LeaveContext.Provider>
+  )
+
+}

@@ -1,59 +1,60 @@
-// app/leaves/[id].jsx
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import React, { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useFetchLeave } from "../../../hooks/useFetchLeave";
-import { useAuthContext } from "../../../hooks/useAuthContext";
-import { API_URL } from "../../../config";
+import { useLeaveContext } from "../../../hooks/useLeaveContext";
 import { useDownloadExcel } from "../../../hooks/useDownloadExcel";
 
 export default function LeaveView() {
   const { id } = useLocalSearchParams();
-  const { leave, loading, error, refetch } = useFetchLeave(id); // Make sure your hook can refetch data
+  const { leaves, approveLeave, rejectLeave, loading } = useLeaveContext();
   const [actionLoading, setActionLoading] = useState(false);
-
   const { downloadExcel } = useDownloadExcel();
-  const { user } = useAuthContext();
+
+
+  const leave = useMemo(() => leaves.find((l) => l._id === id), [leaves, id]);
 
 
   const handleAction = async (action) => {
     setActionLoading(true);
     try {
-      const response = await fetch(`${API_URL}/leaves/${id}/${action}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to update leave");
+      if (action === "approve") await approveLeave(id);
+      else await rejectLeave(id);
 
       Alert.alert(
         "Success",
         `Leave successfully ${action === "approve" ? "approved" : "rejected"}.`
       );
-
-      await refetch?.(); // refresh data if available
     } catch (err) {
-      Alert.alert("Error", err.message);
+      Alert.alert("Error", err.message || "Something went wrong");
       console.error(err);
     } finally {
       setActionLoading(false);
     }
   };
 
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error fetching leave.</Text>;
+  if (loading) return <Text>Loading leaves...</Text>;
+  if (!leave) return <Text>Leave not found.</Text>;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Leave Details</Text>
-      <Text>Name: {leave.name.last}, {leave.name.first}</Text>
+      <Text>
+        Name: {leave.name.last}, {leave.name.first}
+      </Text>
       <Text>Type: {leave.leaveType}</Text>
-      <Text>Start Date: {leave.startDate}</Text>
-      <Text>End Date: {leave.endDate}</Text>
+      <Text>
+        Start Date: {new Date(leave.startDate).toLocaleDateString()}
+      </Text>
+      <Text>
+        End Date: {new Date(leave.endDate).toLocaleDateString()}
+      </Text>
       <Text>Reason: {leave.reason}</Text>
       <Text>Status: {leave.status}</Text>
 
@@ -84,18 +85,13 @@ export default function LeaveView() {
       </View>
 
       <TouchableOpacity
-        style={{
-          marginTop: 20,
-          backgroundColor: "#007AFF",
-          padding: 10,
-          borderRadius: 8,
-        }}
-        onPress={() => downloadExcel(`leaves/generate-excel/${id}`, `leave-${id}`)}
+        style={styles.excelButton}
+        onPress={() =>
+          downloadExcel(`leaves/generate-excel/${id}`, `leave-${id}`)
+        }
       >
-        <Text style={{ color: "#fff", textAlign: "center" }}>Download Excel</Text>
+        <Text style={styles.excelText}>Download Excel</Text>
       </TouchableOpacity>
-
-
     </View>
   );
 }
@@ -118,4 +114,11 @@ const styles = StyleSheet.create({
   approve: { backgroundColor: "#4CAF50" },
   reject: { backgroundColor: "#F44336" },
   buttonText: { color: "#fff", fontWeight: "bold" },
+  excelButton: {
+    marginTop: 20,
+    backgroundColor: "#007AFF",
+    padding: 10,
+    borderRadius: 8,
+  },
+  excelText: { color: "#fff", textAlign: "center" },
 });

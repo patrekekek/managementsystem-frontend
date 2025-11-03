@@ -1,3 +1,5 @@
+//not in use
+
 import { useState, useEffect } from "react";
 import { API_URL } from "../config"
 import AsyncStorage from "@react-native-async-storage/async-storage";

@@ -1,5 +1,4 @@
-// app/leaves/LeaveDetails.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,17 +7,18 @@ import {
   FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useFetchAllLeaves } from "../../hooks/useFetchAllLeaves";
+import { useLeaveContext } from "../../hooks/useLeaveContext";
 
 export default function Leaves() {
   const router = useRouter();
-  const { leaves, loading, error } = useFetchAllLeaves();
-  const [filter, setFilter] = useState("pending"); // default filter
+  const { leaves, loading, error, fetchLeaves } = useLeaveContext();
+  const [filter, setFilter] = useState("pending");
+
 
   if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error loading leaves.</Text>;
+  if (error) return <Text>Error: {error}.</Text>;
 
-  // Filter the leaves based on selected status
+
   const filteredLeaves = leaves.filter((item) => item.status === filter);
 
   return (
@@ -92,7 +92,7 @@ export default function Leaves() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
 
-  // FILTER BUTTONS
+
   filterContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   filterText: { color: "#333", fontWeight: "500" },
   activeFilterText: { color: "#fff" },
 
-  // LEAVES LIST
+
   item: {
     padding: 12,
     borderWidth: 1,
