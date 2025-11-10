@@ -18,7 +18,7 @@ const leaveReducer = (state, action) => {
     case "SET_LOADING":
       return { ...state, loading: action.payload, error: null };
 
-    case "SET_ERROR":
+    case "SET_ERROR":s
       return { ...state, loading: false, error: action.payload };
 
     case "SET_LEAVES":
@@ -32,7 +32,13 @@ const leaveReducer = (state, action) => {
             ? { ...leave, status: action.payload.status }
             : leave
         ),
-      };
+      }
+    
+    case "FILE_LEAVE":
+      return {
+        ...state,
+        leaves: [action.payload, ...state.leaves],
+      }
       
     default:
       return state;
@@ -49,7 +55,12 @@ export function LeaveProvider({ children }) {
     try {
       if (!user?.token) throw new Error("No authorization token found");
 
-      const res = await fetch(`${API_URL}/leaves/all`, {
+      const endpoint =
+        user.role === "admin"
+          ? `${API_URL}/leaves/all`
+          : `${API_URL}/leaves/my`;
+
+      const res = await fetch(endpoint, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +73,7 @@ export function LeaveProvider({ children }) {
       dispatch({ type: "SET_LEAVES", payload: data })
     } catch(error) {
       dispatch({ type: "SET_ERROR", payload: error.message })
-      console.error("Error fetching leaves", error)
+      console.error("Error fetching leaves bilat", error)
     } finally {
       dispatch({ type: "SET_LOADING", payload: false })
     }

@@ -158,6 +158,11 @@ export default function ProfileForm({ user }) {
         {user?.name.last}
       </Text>
 
+      <Text style={styles.label}>Salary</Text>
+      <Text style={styles.readonlyInput}>
+        P {user?.salary?.toLocaleString('en-US')}
+      </Text>
+
       <Text style={styles.label}>Bio</Text>
       <TextInput
         style={[styles.input, { height: 80 }]}
