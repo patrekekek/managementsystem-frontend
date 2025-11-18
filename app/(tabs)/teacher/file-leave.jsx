@@ -56,44 +56,6 @@ export default function FileLeave() {
     return diffTime > 0 ? diffTime / (1000 * 60 * 60 * 24) + 1 : 1;
   };
 
-  //for testing
-  const sampleSubmit = () => {
-    console.log("user", user)
-
-    const leaveData = {
-      user: user._id, // get from backend if possible
-      officeDepartment: user.officeDepartment || "Default Dept",
-      name: {
-        first: user.name.first,
-        last: user.name.last,
-        middle: user.name.middle || ""
-      },
-      position: user.position || "Teacher",
-      salary: user.salary || 0,
-      leaveType: leaveTypeEnumMap[leaveType],
-      numberOfDays: getNumberOfDays(startDate, endDate),
-      startDate,
-      endDate,
-      vacation:
-        leaveType === "Vacation Leave"
-          ? { withinPhilippines: vacationWithin, abroad: vacationAbroad }
-          : {},
-      sick:
-        leaveType === "Sick Leave"
-          ? { type: sickType, illness: sickIllness }
-          : {},
-      study:
-        leaveType === "Study Leave"
-          ? { mastersDegree: studyType === "masters", boardExamReview: studyType === "board" }
-          : {},
-      others:
-        leaveType === "Others"
-          ? { monetization: othersType === "monetization", terminal: othersType === "terminal" }
-          : {}
-    };
-
-    console.log(leaveData);
-  }
 
   const handleSubmit = async () => {
     if (!startDate || !endDate || !leaveType) {
@@ -142,6 +104,7 @@ export default function FileLeave() {
     console.log("bilat", leaveData);
 
     try {
+
       await fileLeave(leaveData);
 
       Alert.alert("Success", "Leave filed successfully", [

@@ -18,7 +18,7 @@ const leaveReducer = (state, action) => {
     case "SET_LOADING":
       return { ...state, loading: action.payload, error: null };
 
-    case "SET_ERROR":s
+    case "SET_ERROR":
       return { ...state, loading: false, error: action.payload };
 
     case "SET_LEAVES":
@@ -127,8 +127,8 @@ export function LeaveProvider({ children }) {
         fetchLeaves, 
         updateLeaveStatus,
         approveLeave,
-        rejectLeave 
-
+        rejectLeave,
+        dispatch
       }}>
       { children }
     </LeaveContext.Provider>

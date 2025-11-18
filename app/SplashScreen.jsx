@@ -41,9 +41,9 @@ export default function SplashScreen() {
           { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
         ]}
       >
-        MySchoolApp
+        jlnhs teacher management system
       </Animated.Text>
-      <Text style={styles.subtitle}>Simplifying teachers' lives ✨</Text>
+      <Text style={styles.subtitle}>welcome, cher!</Text>
     </View>
   );
 }
