@@ -4,4 +4,4 @@ const PORT = 5000;
 
 export const API_URL = __DEV__
   ? `http://${LAN_IP}:${PORT}/api` // Development (Expo Go on phone)
-  : "https://managementsystem-backend.onrender.com";
+  : "https://managementsystem-backend.onrender.com/api";
