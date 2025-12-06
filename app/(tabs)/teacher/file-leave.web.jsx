@@ -156,6 +156,7 @@ export default function FileLeaveWeb() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.shell}>
+        
         <TeacherWebTabs />
 
         <View style={styles.card}>

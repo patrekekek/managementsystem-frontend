@@ -22,7 +22,7 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
 
-    //make this into hook
+    //make this into hook later
   const fetchRecentLeaves = async () => {
       if (!user || loading) return;
 

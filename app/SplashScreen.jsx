@@ -1,49 +1,34 @@
-//not working
-
-import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Animated, Easing } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
+import { useAuthContext } from "../hooks/useAuthContext"; // adjust path
 
 export default function SplashScreen() {
+  const { user, loading: authLoading } = useAuthContext();
   const router = useRouter();
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const [internalLoading, setInternalLoading] = useState(true);
 
   useEffect(() => {
+    if (!authLoading) {
 
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 3,
-        useNativeDriver: true,
-      }),
-    ]).start();
+      const t = setTimeout(() => {
+        if (user) {
+          router.replace("/");
+        } else {
+          router.replace("/login");
+        }
+      }, 600);
 
-
-    const timer = setTimeout(() => {
-      // Check if user is logged in, then route accordingly
-      router.replace("/login"); // or "/(adminTabs)/dashboard"
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(t);
+    }
+  }, [authLoading, user, router]);
 
   return (
     <View style={styles.container}>
-      <Animated.Text
-        style={[
-          styles.logoText,
-          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-        ]}
-      >
-        jlnhs teacher management system
-      </Animated.Text>
-      <Text style={styles.subtitle}>welcome, cher!</Text>
+      <ActivityIndicator
+        size={Platform.OS === "web" ? 50 : "large"}
+        color="#2563eb"
+      />
     </View>
   );
 }
@@ -51,18 +36,8 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#007AFF",
-    justifyContent: "center",
+    backgroundColor: "#fff",
     alignItems: "center",
-  },
-  logoText: {
-    fontSize: 40,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "white",
-    marginTop: 10,
+    justifyContent: "center",
   },
 });
