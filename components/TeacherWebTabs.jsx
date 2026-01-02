@@ -5,12 +5,13 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, usePathname } from "expo-router";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useLogout } from "../hooks/useLogout";
-
+import { useResponsive } from "../hooks/useResponsive";
 
 const MAX_SHELL_WIDTH = 1200;
 const HORIZONTAL_PADDING = 20;
@@ -20,6 +21,7 @@ export default function TeacherWebTabs() {
   const pathname = usePathname();
   const { user } = useAuthContext();
   const { logout } = useLogout();
+  const { isMobile } = useResponsive();
 
   const tabs = [
     { key: "dashboard", label: "Dashboard", route: "/(tabs)/teacher/dashboard", icon: "grid-outline" },
@@ -34,24 +36,41 @@ export default function TeacherWebTabs() {
   };
 
   return (
-    <View style={[styles.wrap, { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING }]}>
-      {/* Top header */}
-      <View style={styles.topbar}>
+    <View
+      style={[
+        styles.wrap,
+        { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING },
+      ]}
+    >
+
+      <View
+        style={[
+          styles.topbar,
+          isMobile && styles.topbarMobile,
+        ]}
+      >
         <View>
           <Text style={styles.brand}>JLNHS Management</Text>
           <Text style={styles.brandSub}>Teacher Dashboard</Text>
         </View>
 
-        <View style={styles.headerRight}>
-          <Text style={styles.userLabel}>Logged in as</Text>
-          <Text style={styles.username}>{user?.username || "Teacher"}</Text>
+        <View
+          style={[
+            styles.headerRight,
+            isMobile && styles.headerRightMobile,
+          ]}
+        >
+          <View style={styles.userBlock}>
+            <Text style={styles.userLabel}>Logged in as</Text>
+            <Text style={styles.username}>{user?.username || "Teacher"}</Text>
+          </View>
 
           <Pressable
             onPress={handleLogout}
             style={({ hovered, pressed }) => [
               styles.logout,
               hovered && styles.logoutHover,
-              pressed && { transform: [{ scale: 0.99 }] },
+              pressed && { transform: [{ scale: 0.98 }] },
             ]}
           >
             <Text style={styles.logoutText}>Log out</Text>
@@ -59,9 +78,13 @@ export default function TeacherWebTabs() {
         </View>
       </View>
 
-      {/* Tabs / subnav */}
-      <View style={styles.tabsWrap}>
-        {tabs.map((t, i) => {
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabsWrap}
+      >
+        {tabs.map((t) => {
           const active = pathname?.startsWith(t.route);
           return (
             <Pressable
@@ -71,7 +94,6 @@ export default function TeacherWebTabs() {
                 styles.tab,
                 hovered && styles.tabHover,
                 active && styles.activeTab,
-                i === tabs.length - 1 && { marginRight: 0 },
               ]}
             >
               <Ionicons
@@ -85,27 +107,33 @@ export default function TeacherWebTabs() {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   wrap: {
     width: "100%",
     alignSelf: "center",
-    marginBottom: 12,
-    boxSizing: "border-box",
+    marginBottom: 16,
   },
 
-  /* top header */
+  /* header */
   topbar: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
   },
+  topbarMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+
   brand: {
     fontSize: 20,
     fontWeight: "700",
@@ -119,18 +147,26 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
+  },
+  headerRightMobile: {
+    width: "100%",
+    justifyContent: "space-between",
+  },
+
+  userBlock: {
+    flexDirection: "column",
   },
   userLabel: {
     fontSize: 12,
     color: "#6b7280",
-    marginRight: 8,
   },
   username: {
     fontSize: 15,
     fontWeight: "600",
     color: "#111827",
-    marginRight: 12,
   },
+
   logout: {
     backgroundColor: "#EFEDF7",
     paddingVertical: 8,
@@ -148,25 +184,22 @@ const styles = StyleSheet.create({
 
   /* tabs */
   tabsWrap: {
-    width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    gap: 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#e6e9ef",
-    paddingBottom: 10,
-    flexShrink: 0,
-    justifyContent: "flex-start",
   },
 
   tab: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: 8,
+    backgroundColor: "transparent",
     cursor: Platform.OS === "web" ? "pointer" : undefined,
-    marginRight: 12,
     whiteSpace: "nowrap",
   },
   tabHover: {
@@ -175,8 +208,6 @@ const styles = StyleSheet.create({
 
   activeTab: {
     backgroundColor: "#e7f7eb",
-    borderBottomWidth: 2,
-    borderBottomColor: "#16a34a",
   },
 
   tabLabel: {
