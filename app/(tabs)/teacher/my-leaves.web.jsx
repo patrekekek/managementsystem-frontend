@@ -9,17 +9,18 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+
 import TeacherWebTabs from "../../../components/TeacherWebTabs";
 import { useAuthContext } from "../../../hooks/useAuthContext";
+import { useResponsive } from "../../../hooks/useResponsive";
 import { useRouter } from "expo-router";
 import { API_URL } from "../../../config";
 
-const MAX_SHELL_WIDTH = 1200;
-const HORIZONTAL_PADDING = 20;
 const PAGE_SIZE = 10;
 
 export default function MyLeavesWeb() {
   const { user, loading: authLoading } = useAuthContext();
+  const { isMobile } = useResponsive();
   const router = useRouter();
 
   const [leaves, setLeaves] = useState([]);
@@ -34,35 +35,25 @@ export default function MyLeavesWeb() {
   const fetchPage = useCallback(
     async (pageToLoad = 1) => {
       if (!user) return;
-      if (pageToLoad === 1) setIsLoadingInitial(true);
-      else setIsLoadingMore(true);
 
+      pageToLoad === 1 ? setIsLoadingInitial(true) : setIsLoadingMore(true);
       setError(null);
+
       try {
         const res = await fetch(
           `${API_URL}/leaves/my?page=${pageToLoad}&limit=${PAGE_SIZE}`,
-          {
-            headers: { Authorization: `Bearer ${user.token}` },
-          }
+          { headers: { Authorization: `Bearer ${user.token}` } }
         );
 
-        if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(txt || "Failed to fetch leaves");
-        }
+        if (!res.ok) throw new Error(await res.text());
 
         const data = await res.json();
         const items = Array.isArray(data) ? data : data.items || [];
 
-        if (pageToLoad === 1) {
-          setLeaves(items);
-        } else {
-          setLeaves((prev) => [...prev, ...items]);
-        }
-
+        setLeaves((prev) => (pageToLoad === 1 ? items : [...prev, ...items]));
         setHasMore(items.length === PAGE_SIZE);
       } catch (err) {
-        console.error("fetch leaves error", err);
+        console.error(err);
         setError(err.message || "Failed to load leaves");
       } finally {
         setIsLoadingInitial(false);
@@ -73,7 +64,6 @@ export default function MyLeavesWeb() {
     [user]
   );
 
-  // initial load
   useEffect(() => {
     if (!authLoading && user) {
       setPage(1);
@@ -81,7 +71,6 @@ export default function MyLeavesWeb() {
     }
   }, [user, authLoading, fetchPage]);
 
-  // load more handler
   const handleLoadMore = () => {
     if (isLoadingMore || isLoadingInitial || !hasMore) return;
     const next = page + 1;
@@ -89,7 +78,6 @@ export default function MyLeavesWeb() {
     fetchPage(next);
   };
 
-  // pull-to-refresh
   const handleRefresh = () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -104,43 +92,44 @@ export default function MyLeavesWeb() {
     return (
       <Pressable
         onPress={() => router.push(`/leave-details/${item._id}`)}
-        style={({ hovered }) => [styles.row, hovered && styles.rowHover]}
+        style={({ hovered }) => [
+          styles.row,
+          isMobile && styles.rowMobile,
+          hovered && styles.rowHover,
+        ]}
       >
         <View style={styles.rowLeft}>
           <Text style={styles.rowType}>{item.leaveType}</Text>
           <Text style={styles.rowDate}>{date}</Text>
         </View>
 
-        <View style={styles.rowRight}>
-          <Text
-            style={[
-              styles.statusBadge,
-              status === "approved" && styles.approved,
-              status === "rejected" && styles.rejected,
-              status === "pending" && styles.pending,
-            ]}
-          >
-            {status}
-          </Text>
-        </View>
+        <Text
+          style={[
+            styles.statusBadge,
+            status === "approved" && styles.approved,
+            status === "rejected" && styles.rejected,
+            status === "pending" && styles.pending,
+          ]}
+        >
+          {status}
+        </Text>
       </Pressable>
     );
   };
 
-  // List footer component
   const ListFooter = () => {
     if (isLoadingMore) {
       return (
         <View style={styles.footer}>
           <ActivityIndicator size="small" color="#16a34a" />
-          <Text style={{ marginLeft: 10, color: "#6b7280" }}>Loading more…</Text>
+          <Text style={styles.footerText}>Loading more…</Text>
         </View>
       );
     }
     if (!hasMore) {
       return (
         <View style={styles.footer}>
-          <Text style={{ color: "#6b7280" }}>You’ve reached the end.</Text>
+          <Text style={styles.footerText}>You’ve reached the end.</Text>
         </View>
       );
     }
@@ -150,7 +139,7 @@ export default function MyLeavesWeb() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <View style={styles.page}>
-        <View style={[styles.shell, { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING }]}>
+        <View style={styles.shell}>
           <TeacherWebTabs />
           <View style={styles.card}>
             <ActivityIndicator size="large" color="#16a34a" />
@@ -162,16 +151,18 @@ export default function MyLeavesWeb() {
 
   return (
     <View style={styles.page}>
-      <View style={[styles.shell, { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING }]}>
+      <View style={styles.shell}>
         <TeacherWebTabs />
 
-        <View style={styles.card}>
+        <View style={[styles.card, isMobile && styles.cardMobile]}>
           <Text style={styles.title}>My Leaves</Text>
 
           {error ? (
             <View style={styles.center}>
               <Text style={styles.error}>{error}</Text>
             </View>
+          ) : leaves.length === 0 && !isLoadingInitial ? (
+            <Text style={styles.empty}>No leaves found.</Text>
           ) : (
             <FlatList
               data={leaves}
@@ -182,9 +173,11 @@ export default function MyLeavesWeb() {
               onEndReachedThreshold={0.6}
               ListFooterComponent={ListFooter}
               refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={handleRefresh}
+                />
               }
-
               style={{ width: "100%" }}
             />
           )}
@@ -194,6 +187,7 @@ export default function MyLeavesWeb() {
   );
 }
 
+
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -201,16 +195,20 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     alignItems: "center",
   },
+
   shell: {
     width: "100%",
+    maxWidth: 1200,
+    paddingHorizontal: 20,
   },
 
   card: {
-    width: "100%",
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 12,
-    boxShadow: "0 8px 24px rgba(10,20,30,0.06)",
+  },
+  cardMobile: {
+    padding: 14,
   },
 
   title: {
@@ -227,30 +225,36 @@ const styles = StyleSheet.create({
   },
 
   empty: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#6b7280",
-    paddingVertical: 28,
+    paddingVertical: 24,
     textAlign: "center",
   },
 
   error: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#b91c1c",
   },
 
   row: {
     width: "100%",
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 12,
     borderRadius: 10,
     cursor: Platform.OS === "web" ? "pointer" : undefined,
   },
+  rowMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 6,
+  },
   rowHover: {
     backgroundColor: "#fbfdfb",
   },
+
   rowLeft: {
     flexDirection: "column",
   },
@@ -264,20 +268,17 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     marginTop: 4,
   },
-  rowRight: {
-    minWidth: 110,
-    alignItems: "flex-end",
-  },
 
   statusBadge: {
+    marginTop: 6,
     textTransform: "capitalize",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 999,
     fontSize: 13,
     fontWeight: "700",
-    color: "#374151",
     backgroundColor: "#F3F4F6",
+    color: "#374151",
   },
   approved: { backgroundColor: "#ECFDF5", color: "#065f46" },
   rejected: { backgroundColor: "#FEF2F2", color: "#991B1B" },
@@ -294,6 +295,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
-    width: "100%",
+  },
+  footerText: {
+    marginLeft: 10,
+    color: "#6b7280",
   },
 });
