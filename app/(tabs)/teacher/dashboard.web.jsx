@@ -6,7 +6,6 @@ import {
   Pressable,
   FlatList,
   Platform,
-  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,21 +13,19 @@ import { API_URL } from "../../../config";
 
 // hooks
 import { useAuthContext } from "../../../hooks/useAuthContext";
-import { useLogout } from "../../../hooks/useLogout";
 import { useResponsive } from "../../../hooks/useResponsive";
 
 // components
 import TeacherWebTabs from "../../../components/TeacherWebTabs";
+import WebPage from "../../../components/WebPage";
 
 export default function TeacherDashboardWeb() {
   const { user, loading } = useAuthContext();
-  const { logout } = useLogout();
   const { isMobile } = useResponsive();
   const router = useRouter();
 
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(false);
-
 
   useEffect(() => {
     if (!loading && !user) {
@@ -46,8 +43,7 @@ export default function TeacherDashboardWeb() {
         });
         const data = await res.json();
         setRecentActivity(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setRecentActivity([]);
       } finally {
         setIsLoadingRecent(false);
@@ -63,66 +59,55 @@ export default function TeacherDashboardWeb() {
     rejected: recentActivity.filter(l => l.status === "rejected").length,
   };
 
-
   return (
-    <View style={styles.page}>
-      <View style={styles.shell}>
-        <TeacherWebTabs />
+    <WebPage>
+      <TeacherWebTabs />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Text>Bilat</Text>
-          {/* status */}
-          <View style={[styles.grid, isMobile && styles.gridMobile]}>
-            <StatCard label="Total (recent)" value={totals.total} />
-            <StatCard label="Pending" value={totals.pending} color="#D97706" />
-            <StatCard label="Approved" value={totals.approved} color="#16A34A" />
-            <StatCard label="Rejected" value={totals.rejected} color="#DC2626" />
-          </View>
-
-          
-          <View style={[styles.actionRow, isMobile && styles.actionRowMobile]}>
-            <ActionButton
-              primary
-              icon="create-outline"
-              label="File New Leave"
-              onPress={() => router.push("/(tabs)/teacher/file-leave")}
-            />
-            <ActionButton
-              icon="folder-outline"
-              label="View My Leaves"
-              onPress={() => router.push("/(tabs)/teacher/my-leaves")}
-            />
-          </View>
-
-      
-          <View style={styles.panel}>
-            <Text style={styles.panelTitle}>Recent Activity</Text>
-
-            {isLoadingRecent ? (
-              <Text style={styles.muted}>Loading…</Text>
-            ) : recentActivity.length === 0 ? (
-              <Text style={styles.muted}>No recent leaves.</Text>
-            ) : (
-              <FlatList
-                data={recentActivity}
-                keyExtractor={i => i._id}
-                scrollEnabled={false}
-                renderItem={({ item }) => (
-                  <ActivityRow item={item} isMobile={isMobile} />
-                )}
-              />
-            )}
-          </View>
-        </ScrollView>
+      <View style={[styles.grid, isMobile && styles.gridMobile]}>
+        <StatCard label="Total (recent)" value={totals.total} />
+        <StatCard label="Pending" value={totals.pending} color="#D97706" />
+        <StatCard label="Approved" value={totals.approved} color="#16A34A" />
+        <StatCard label="Rejected" value={totals.rejected} color="#DC2626" />
       </View>
-    </View>
+
+      <View style={[styles.actionRow, isMobile && styles.actionRowMobile]}>
+        <ActionButton
+          primary
+          icon="create-outline"
+          label="File New Leave"
+          onPress={() => router.push("/(tabs)/teacher/file-leave")}
+        />
+        <ActionButton
+          icon="folder-outline"
+          label="View My Leaves"
+          onPress={() => router.push("/(tabs)/teacher/my-leaves")}
+        />
+      </View>
+
+      {/* ---------- RECENT ACTIVITY ---------- */}
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>Recent Activity</Text>
+
+        {isLoadingRecent ? (
+          <Text style={styles.muted}>Loading…</Text>
+        ) : recentActivity.length === 0 ? (
+          <Text style={styles.muted}>No recent leaves.</Text>
+        ) : (
+          <FlatList
+            data={recentActivity}
+            keyExtractor={i => i._id}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+              <ActivityRow item={item} isMobile={isMobile} />
+            )}
+          />
+        )}
+      </View>
+    </WebPage>
   );
 }
 
-
+//helper functions
 
 function StatCard({ label, value, color }) {
   return (
@@ -186,25 +171,9 @@ function ActivityRow({ item, isMobile }) {
   );
 }
 
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: "#f5f7fb",
-    alignItems: "center",
-    paddingVertical: 24,
-  },
-  shell: {
-    width: "100%",
-    maxWidth: 1200,
-    paddingHorizontal: 20,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
 
-  /* Grid */
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
