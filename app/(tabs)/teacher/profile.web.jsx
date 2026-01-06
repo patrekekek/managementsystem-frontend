@@ -4,45 +4,31 @@ import { useAuthContext } from "../../../hooks/useAuthContext";
 
 import TeacherWebTabs from "../../../components/TeacherWebTabs";
 import ProfileFormWeb from "../../../components/ProfileFormWeb";
-
-
-const MAX_SHELL_WIDTH = 1000;
-const HORIZONTAL_PADDING = 20;
+import WebPage from "../../../components/WebPage";
 
 export default function TeacherProfileWeb() {
   const { user } = useAuthContext();
 
   return (
-    <View style={styles.page}>
-      <View
-        style={[
-          styles.shell,
-          { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING },
-        ]}
-      >
-        <TeacherWebTabs />
+    <WebPage>
+      <TeacherWebTabs />
 
+      <View style={styles.cardWrap}>
         <View style={styles.card}>
-          <Text style={styles.title}> My Profile</Text>
-
-
+          <Text style={styles.title}>My Profile</Text>
           <ProfileFormWeb user={user} />
         </View>
       </View>
-    </View>
+    </WebPage>
   );
 }
 
-const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: "#f5f7fb",
-    paddingVertical: 28,
-    alignItems: "center",
-  },
 
-  shell: {
+const styles = StyleSheet.create({
+  cardWrap: {
     width: "100%",
+    maxWidth: 1000,
+    marginHorizontal: "auto",
   },
 
   card: {
@@ -50,7 +36,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 24,
     borderRadius: 12,
-    boxShadow: "0 8px 24px rgba(10,20,30,0.08)",
   },
 
   title: {

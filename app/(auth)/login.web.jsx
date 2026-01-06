@@ -19,7 +19,7 @@ import { useLogin } from "../../hooks/useLogin";
 
 export default function Login() {
   const { width } = useWindowDimensions();
-  const isWide = width >= 900; // breakpoint for desktop layout
+  const isWide = width >= 900;
   const cardWidth = isWide ? Math.min(720, width * 0.8) : "92%";
 
   const [username, setUsername] = useState("");
@@ -30,7 +30,7 @@ export default function Login() {
   const { user } = useAuthContext();
   const passwordInputRef = useRef(null);
 
-  // hover states (web)
+
   const [btnHover, setBtnHover] = useState(false);
   const [registerHover, setRegisterHover] = useState(false);
   const [eyeHover, setEyeHover] = useState(false);
@@ -77,7 +77,7 @@ export default function Login() {
           {isWide && (
             <View style={styles.illustrationWrap}>
               <Image
-                source={require("../../assets/login-illustration.png")}
+                source={require("../../assets/login-illustration.jpg")}
                 style={styles.illustration}
                 resizeMode="contain"
                 accessibilityIgnoresInvertColors

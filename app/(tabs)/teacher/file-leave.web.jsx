@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Platform,
   Alert,
-  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -17,6 +16,7 @@ import { useResponsive } from "../../../hooks/useResponsive";
 
 import { leaveList, leaveTypeEnumMap } from "../../../constants/leaveList";
 import TeacherWebTabs from "../../../components/TeacherWebTabs";
+import WebPage from "../../../components/WebPage";
 
 export default function FileLeaveWeb() {
   const { user } = useAuthContext();
@@ -53,7 +53,9 @@ export default function FileLeaveWeb() {
   const getNumberOfDays = (start, end) => {
     if (!start || !end) return 1;
     const diffTime = new Date(end) - new Date(start);
-    return diffTime >= 0 ? diffTime / (1000 * 60 * 60 * 24) + 1 : 1;
+    return diffTime >= 0
+      ? diffTime / (1000 * 60 * 60 * 24) + 1
+      : 1;
   };
 
   const handleSubmit = async () => {
@@ -147,143 +149,145 @@ export default function FileLeaveWeb() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <View style={styles.shell}>
-        <TeacherWebTabs />
+    <WebPage>
+      <TeacherWebTabs />
 
-        <View style={[styles.card, isMobile && styles.cardMobile]}>
-          <Text style={styles.heading}>File a Leave</Text>
+      <View style={[styles.card, isMobile && styles.cardMobile]}>
+        <Text style={styles.heading}>File a Leave</Text>
 
-          {/* Leave Type */}
-          <View style={styles.row}>
-            <label style={webStyles.label}>Leave Type *</label>
-            <select
-              value={leaveType}
-              onChange={(e) => setLeaveType(e.target.value)}
-              style={webStyles.select}
-            >
-              <option value="">Select leave type</option>
-              {leaveList.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </View>
+        {/* Leave Type */}
+        <FormRow label="Leave Type *">
+          <select
+            value={leaveType}
+            onChange={(e) => setLeaveType(e.target.value)}
+            style={webStyles.select}
+          >
+            <option value="">Select leave type</option>
+            {leaveList.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </FormRow>
 
-          {/* Conditional Fields */}
-          {leaveType === "Vacation Leave" && (
-            <>
-              <Input label="Vacation Within Philippines" value={vacationWithin} onChange={setVacationWithin} />
-              <Input label="Vacation Abroad" value={vacationAbroad} onChange={setVacationAbroad} />
-            </>
-          )}
+        {leaveType === "Vacation Leave" && (
+          <>
+            <Input label="Vacation Within Philippines" value={vacationWithin} onChange={setVacationWithin} />
+            <Input label="Vacation Abroad" value={vacationAbroad} onChange={setVacationAbroad} />
+          </>
+        )}
 
-          {leaveType === "Sick Leave" && (
-            <>
-              <Select
-                label="Sick Type"
-                value={sickType}
-                onChange={setSickType}
-                options={[
-                  { value: "hospital", label: "In Hospital" },
-                  { value: "outpatient", label: "Out Patient" },
-                ]}
-              />
-              <Input label="Specify Illness" value={sickIllness} onChange={setSickIllness} />
-            </>
-          )}
-
-          {leaveType === "Study Leave" && (
+        {leaveType === "Sick Leave" && (
+          <>
             <Select
-              label="Study Type"
-              value={studyType}
-              onChange={setStudyType}
+              label="Sick Type"
+              value={sickType}
+              onChange={setSickType}
               options={[
-                { value: "masters", label: "Completion of Master's Degree" },
-                { value: "board", label: "BAR / Board Exam Review" },
+                { value: "hospital", label: "In Hospital" },
+                { value: "outpatient", label: "Out Patient" },
               ]}
             />
-          )}
+            <Input label="Specify Illness" value={sickIllness} onChange={setSickIllness} />
+          </>
+        )}
 
-          {leaveType === "Special Leave Benefits for Women" && (
-            <Input label="Specify Illness" value={womenIllness} onChange={setWomenIllness} />
-          )}
+        {leaveType === "Study Leave" && (
+          <Select
+            label="Study Type"
+            value={studyType}
+            onChange={setStudyType}
+            options={[
+              { value: "masters", label: "Completion of Master's Degree" },
+              { value: "board", label: "BAR / Board Exam Review" },
+            ]}
+          />
+        )}
 
-          {leaveType === "Others" && (
-            <>
-              <Select
-                label="Others Type"
-                value={othersType}
-                onChange={setOthersType}
-                options={[
-                  { value: "monetization", label: "Monetization of Leave Credits" },
-                  { value: "terminal", label: "Terminal Leave" },
-                ]}
-              />
-              <Input label="Specify Reason" value={otherReason} onChange={setOthersReason} />
-            </>
-          )}
+        {leaveType === "Special Leave Benefits for Women" && (
+          <Input label="Specify Illness" value={womenIllness} onChange={setWomenIllness} />
+        )}
 
-          <View style={styles.row}>
-            <label style={webStyles.label}>Start Date *</label>
-            <DateInput value={startDate} onChange={setStartDate} />
-          </View>
-
-          <View style={styles.row}>
-            <label style={webStyles.label}>End Date *</label>
-            <DateInput value={endDate} onChange={setEndDate} />
-          </View>
-
-          <View style={[styles.actions, isMobile && styles.actionsMobile]}>
-            <Pressable
-              onPress={handleSubmit}
-              disabled={submitting}
-              style={({ hovered }) => [
-                styles.button,
-                hovered && styles.buttonHover,
-                submitting && styles.buttonDisabled,
+        {leaveType === "Others" && (
+          <>
+            <Select
+              label="Others Type"
+              value={othersType}
+              onChange={setOthersType}
+              options={[
+                { value: "monetization", label: "Monetization of Leave Credits" },
+                { value: "terminal", label: "Terminal Leave" },
               ]}
-            >
-              <Text style={styles.buttonText}>
-                {submitting ? "Submitting…" : "Submit Leave"}
-              </Text>
-            </Pressable>
+            />
+            <Input label="Specify Reason" value={otherReason} onChange={setOthersReason} />
+          </>
+        )}
 
-            <Pressable
-              onPress={() => router.push("/(tabs)/teacher/my-leaves")}
-              style={({ hovered }) => [
-                styles.secondary,
-                hovered && styles.secondaryHover,
-              ]}
-            >
-              <Text>Cancel</Text>
-            </Pressable>
-          </View>
+        <FormRow label="Start Date *">
+          <DateInput value={startDate} onChange={setStartDate} />
+        </FormRow>
+
+        <FormRow label="End Date *">
+          <DateInput value={endDate} onChange={setEndDate} />
+        </FormRow>
+
+        <View style={[styles.actions, isMobile && styles.actionsMobile]}>
+          <Pressable
+            onPress={handleSubmit}
+            disabled={submitting}
+            style={({ hovered }) => [
+              styles.button,
+              hovered && styles.buttonHover,
+              submitting && styles.buttonDisabled,
+            ]}
+          >
+            <Text style={styles.buttonText}>
+              {submitting ? "Submitting…" : "Submit Leave"}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/(tabs)/teacher/my-leaves")}
+            style={({ hovered }) => [
+              styles.secondary,
+              hovered && styles.secondaryHover,
+            ]}
+          >
+            <Text>Cancel</Text>
+          </Pressable>
         </View>
       </View>
-    </ScrollView>
+    </WebPage>
   );
 }
 
+// helper functions
 
-function Input({ label, value, onChange }) {
+function FormRow({ label, children }) {
   return (
     <View style={styles.row}>
       <label style={webStyles.label}>{label}</label>
+      {children}
+    </View>
+  );
+}
+
+function Input({ label, value, onChange }) {
+  return (
+    <FormRow label={label}>
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChange}
       />
-    </View>
+    </FormRow>
   );
 }
 
 function Select({ label, value, onChange, options }) {
   return (
-    <View style={styles.row}>
-      <label style={webStyles.label}>{label}</label>
+    <FormRow label={label}>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -296,23 +300,12 @@ function Select({ label, value, onChange, options }) {
           </option>
         ))}
       </select>
-    </View>
+    </FormRow>
   );
 }
 
 
 const styles = StyleSheet.create({
-  page: {
-    flexGrow: 1,
-    backgroundColor: "#f5f7fb",
-    alignItems: "center",
-    paddingVertical: 28,
-  },
-  shell: {
-    width: "100%",
-    maxWidth: 1200,
-    paddingHorizontal: 20,
-  },
   card: {
     backgroundColor: "#fff",
     padding: 24,

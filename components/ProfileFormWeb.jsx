@@ -9,12 +9,12 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config";
 import { useLogout } from "../hooks/useLogout";
-
 
 export default function ProfileFormWeb({ user }) {
   const [bio, setBio] = useState("");
@@ -22,139 +22,92 @@ export default function ProfileFormWeb({ user }) {
   const [profilePicture, setProfilePicture] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
   const fileInputRef = useRef(null);
   const { logout } = useLogout();
+  const { width } = useWindowDimensions();
 
+  const isNarrowWeb = Platform.OS === "web" && width < 900;
 
   useEffect(() => {
     const load = async () => {
-      if (user) {
-        setProfilePicture(user.profilePicture || "");
-        setBio(user.bio || "");
-        setFeeling(user.feeling || "");
-      } else {
-        try {
-          const stored = await AsyncStorage.getItem("user");
-          if (stored) {
-            const u = JSON.parse(stored);
-            setProfilePicture(u.profilePicture || "");
-            setBio(u.bio || "");
-            setFeeling(u.feeling || "");
-          }
-        } catch (err) {
-          console.warn("Profile load error", err);
-        }
-      }
+      const source = user
+        ? user
+        : JSON.parse((await AsyncStorage.getItem("user")) || "null");
+
+      if (!source) return;
+      setProfilePicture(source.profilePicture || "");
+      setBio(source.bio || "");
+      setFeeling(source.feeling || "");
     };
     load();
   }, [user]);
 
-
   const updateLocalUser = async (patch) => {
-    try {
-      const stored = await AsyncStorage.getItem("user");
-      if (!stored) return;
-      const u = JSON.parse(stored);
-      const merged = { ...u, ...patch };
-      await AsyncStorage.setItem("user", JSON.stringify(merged));
-    } catch (err) {
-      console.warn("Failed to update local user cache", err);
-    }
+    const stored = await AsyncStorage.getItem("user");
+    if (!stored) return;
+    await AsyncStorage.setItem(
+      "user",
+      JSON.stringify({ ...JSON.parse(stored), ...patch })
+    );
   };
 
-  const handleFileFromInput = async (file) => {
-    if (!file) return;
-    await uploadImage(file);
-  };
-
-  const pickImageNative = async () => {
-    try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        Alert.alert("Permission required", "Please allow photo access.");
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 0.7,
-      });
-
-      if (result.canceled) return;
-      const image = result.assets[0];
-      const blob = await (await fetch(image.uri)).blob();
-      const file = new File([blob], "profile.jpg", { type: blob.type || "image/jpeg" });
-      await uploadImage(file, image.uri);
-    } catch (err) {
-      console.error("Image pick error", err);
-      Alert.alert("Error", "Cannot pick image.");
-    }
-  };
-
-
-  const uploadImage = async (file, previewUri) => {
+  const uploadImage = async (file) => {
     setUploading(true);
     try {
       const stored = await AsyncStorage.getItem("user");
-      if (!stored) {
-        throw new Error("User not found in local storage");
-      }
+      if (!stored) throw new Error("No user");
       const { token } = JSON.parse(stored);
 
       const body = new FormData();
-
       body.append("image", file);
 
       const res = await fetch(`${API_URL}/users/upload-profile`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body,
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      const newUrl = data.url || data.profilePicture || data.data?.url;
-      setProfilePicture(newUrl);
-      await updateLocalUser({ profilePicture: newUrl });
-
+      const url = data.url || data.profilePicture;
+      setProfilePicture(url);
+      await updateLocalUser({ profilePicture: url });
       Alert.alert("Success", "Profile photo updated!");
-    } catch (err) {
-      console.error("Upload error", err);
-      Alert.alert("Upload failed", err.message || "Please try again");
+    } catch (e) {
+      Alert.alert("Error", e.message);
     } finally {
       setUploading(false);
     }
   };
 
+  const pickImageNative = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+    const img = result.assets[0];
+    const blob = await (await fetch(img.uri)).blob();
+    uploadImage(new File([blob], "profile.jpg", { type: blob.type }));
+  };
+
   const onAvatarPress = () => {
-    if (Platform.OS === "web") {
-      if (fileInputRef.current) fileInputRef.current.click();
-      return;
-    }
+    if (Platform.OS === "web") return fileInputRef.current?.click();
     pickImageNative();
   };
 
-
-  const handlePostBio = async () => {
-    if (bio.trim().length === 0 && feeling.trim().length === 0) {
-      Alert.alert("Nothing to save", "Please add a bio or how you're feeling.");
-      return;
-    }
+  const saveProfile = async () => {
+    if (!bio.trim() && !feeling.trim()) return;
 
     setSaving(true);
     try {
       const stored = await AsyncStorage.getItem("user");
-      if (!stored) {
-        throw new Error("User not found");
-      }
       const { token } = JSON.parse(stored);
 
       const res = await fetch(`${API_URL}/users/update-bio`, {
@@ -163,108 +116,103 @@ export default function ProfileFormWeb({ user }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ bio: bio.trim(), feeling: feeling.trim() }),
+        body: JSON.stringify({ bio, feeling }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Update failed");
+      if (!res.ok) throw new Error(data.error);
 
-      await updateLocalUser({ bio: data.user.bio, feeling: data.user.feeling });
-      Alert.alert("Success", "Your profile has been updated!");
-    } catch (err) {
-      console.error("Update error", err);
-      Alert.alert("Error", err.message || "Could not update profile.");
+      await updateLocalUser({
+        bio: data.user.bio,
+        feeling: data.user.feeling,
+      });
+      Alert.alert("Saved", "Profile updated");
+    } catch (e) {
+      Alert.alert("Error", e.message);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
-
-
-  const displayName = `${user?.name?.first || ""} ${user?.name?.middle ? user?.name?.middle.charAt(0).toUpperCase() + "." : ""} ${user?.name?.last || ""}`.trim();
-  const displaySalary = user?.salary ? `P ${Number(user.salary).toLocaleString()}` : "-";
+  const displayName = `${user?.name?.first || ""} ${
+    user?.name?.middle ? user.name.middle[0] + "." : ""
+  } ${user?.name?.last || ""}`.trim();
 
   return (
-    <View style={[styles.root, Platform.OS === "web" ? styles.rootWeb : null]}>
+    <View
+      style={[
+        styles.root,
+        Platform.OS === "web" && !isNarrowWeb && styles.rootWeb,
+      ]}
+    >
       {Platform.OS === "web" && (
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
-          onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (f) await handleFileFromInput(f);
-            e.target.value = null;
-          }}
+          onChange={(e) => uploadImage(e.target.files[0])}
         />
       )}
 
+      {/* AVATAR */}
       <View style={styles.avatarColumn}>
-        <TouchableOpacity onPress={onAvatarPress} style={styles.imageContainer} disabled={uploading}>
-          {uploading ? (
-            <View style={[styles.avatarBox, styles.avatarUploading]}>
-              <ActivityIndicator size="small" color="#fff" />
-            </View>
-          ) : profilePicture ? (
-            <Image source={{ uri: profilePicture }} style={styles.avatarImage} />
+        <TouchableOpacity onPress={onAvatarPress} disabled={uploading}>
+          {profilePicture ? (
+            <Image source={{ uri: profilePicture }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarBox}>
-              <Text style={styles.avatarInitials}>{(user?.name?.first || "U").charAt(0).toUpperCase()}</Text>
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarInitial}>
+                {(user?.name?.first || "U")[0]}
+              </Text>
             </View>
           )}
-
-          <View style={styles.editBadge}>
-            <Text style={styles.editBadgeText}>Edit</Text>
-          </View>
         </TouchableOpacity>
 
-        <Text style={styles.labelSmall}>{displayName}</Text>
-        <Text style={styles.muted}>{displaySalary}</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log Out</Text>
+        <Text style={styles.name}>{displayName}</Text>
+        <TouchableOpacity style={styles.logout} onPress={logout}>
+          <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
       </View>
 
+      {/* FORM */}
       <View style={styles.formColumn}>
         <Text style={styles.label}>Bio</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
+          multiline
           value={bio}
           onChangeText={setBio}
-          placeholder="Tell something about yourself..."
-          multiline
         />
 
-        <Text style={styles.label}>How are you feeling today?</Text>
+        <Text style={styles.label}>Feeling</Text>
         <TextInput
           style={styles.input}
           value={feeling}
           onChangeText={setFeeling}
-          placeholder="😊 Happy, 😓 Tired, 😍 Inspired..."
         />
 
-        <View style={styles.actionsRow}>
+        <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.button, (saving || uploading) && styles.buttonDisabled]}
-            onPress={handlePostBio}
+            style={styles.primary}
+            onPress={saveProfile}
             disabled={saving || uploading}
           >
-            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Save Changes</Text>}
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.primaryText}>Save</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondary, (saving || uploading) && styles.disabledSecondary]}
+            style={styles.secondary}
             onPress={() => {
               setBio(user?.bio || "");
               setFeeling(user?.feeling || "");
             }}
-            disabled={saving || uploading}
           >
-            <Text style={styles.secondaryText}>Reset</Text>
+            <Text>Reset</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -272,139 +220,84 @@ export default function ProfileFormWeb({ user }) {
   );
 }
 
-const AVATAR_SIZE = 110;
-const styles = StyleSheet.create({
-  root: {
-    flexDirection: "column",
-    gap: 12,
-  },
+const AVATAR = 110;
 
-  rootWeb: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
+const styles = StyleSheet.create({
+  root: { gap: 16 },
+  rootWeb: { flexDirection: "row", alignItems: "flex-start" },
 
   avatarColumn: {
-    width: Platform.OS === "web" ? 300 : "100%",
+    width: "100%",
+    maxWidth: 300,
     alignItems: "center",
-    paddingRight: Platform.OS === "web" ? 24 : 0,
-  },
-  formColumn: {
-    flex: 1,
-    minWidth: 280,
   },
 
-  imageContainer: {
-    position: "relative",
-    marginBottom: 12,
+  formColumn: {
+    flex: 1,
+    width: "100%",
   },
-  avatarBox: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
+
+  avatar: {
+    width: AVATAR,
+    height: AVATAR,
+    borderRadius: 14,
+  },
+
+  avatarPlaceholder: {
+    width: AVATAR,
+    height: AVATAR,
     borderRadius: 14,
     backgroundColor: "#16a34a",
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden",
   },
-  avatarUploading: {
-    opacity: 0.85,
-  },
-  avatarImage: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: 14,
-    resizeMode: "cover",
-  },
-  avatarInitials: {
+
+  avatarInitial: {
     color: "#fff",
     fontSize: 32,
     fontWeight: "700",
   },
 
-  editBadge: {
-    position: "absolute",
-    right: -6,
-    bottom: -6,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: "#e6e9ef",
-  },
-  editBadgeText: {
-    color: "#111827",
-    fontWeight: "700",
-    fontSize: 12,
-  },
+  name: { fontWeight: "700", marginTop: 8 },
 
-  labelSmall: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
-    marginTop: 6,
-  },
-  muted: {
-    color: "#6b7280",
-    marginBottom: 12,
-  },
+  label: { marginBottom: 6, fontWeight: "600" },
 
-  label: {
-    fontSize: 14,
-    marginBottom: 8,
-    fontWeight: "600",
-    color: "#374151",
-  },
   input: {
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 12,
     marginBottom: 12,
-    backgroundColor: "#fff",
-  },
-  textArea: {
-    height: 110,
-    textAlignVertical: "top",
   },
 
-  actionsRow: {
+  textArea: { height: 110 },
+
+  actions: {
     flexDirection: "row",
-    alignItems: "center",
-    marginTop: 6,
+    flexWrap: "wrap",
+    gap: 10,
   },
 
-  button: {
+  primary: {
     backgroundColor: "#16a34a",
-    paddingVertical: 12,
-    paddingHorizontal: 18,
+    padding: 12,
     borderRadius: 10,
-    marginRight: 12,
   },
-  buttonDisabled: { opacity: 0.6 },
 
-  buttonText: { color: "#fff", fontWeight: "700" },
+  primaryText: { color: "#fff", fontWeight: "700" },
 
   secondary: {
     backgroundColor: "#f3f4f6",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding: 12,
     borderRadius: 10,
   },
-  disabledSecondary: { opacity: 0.6 },
-  secondaryText: { color: "#374151", fontWeight: "700" },
 
-  logoutButton: {
-    marginTop: 14,
+  logout: {
+    marginTop: 12,
     backgroundColor: "#D1FFBD",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding: 10,
     borderRadius: 8,
   },
-  logoutText: {
-    color: "#064E3B",
-    fontWeight: "700",
-  },
+
+  logoutText: { fontWeight: "700", color: "#064E3B" },
 });
