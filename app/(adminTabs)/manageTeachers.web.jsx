@@ -1,5 +1,4 @@
-// ManageTeachers.web.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,177 +8,262 @@ import {
   Image,
   Platform,
 } from "react-native";
-import AdminWebTabs from "../../components/AdminWebTabs";
-import { useAuthContext } from "../../hooks/useAuthContext";
-import { useFetchTeachers } from "../../hooks/useFetchTeachers";
-import { API_URL } from "../../config";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-const MAX_SHELL_WIDTH = 1200;
-const HORIZONTAL_PADDING = 20;
+import AdminWebTabs from "../../components/AdminWebTabs";
+import WebPage from "../../components/WebPage";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useFetchTeachers } from "../../hooks/useFetchTeachers";
+import { useResponsive } from "../../hooks/useResponsive";
 
 export default function ManageTeachersWeb() {
   const { user } = useAuthContext();
   const { teachers } = useFetchTeachers();
+  const { isMobile } = useResponsive();
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading] = useState(false);
+  const [error] = useState(null);
 
-
-
-  const handleView = (id) => {
-    router.push({
-      pathname: `/(adminTabs)/teacherDetails/${id}`,
-      params: { id },
-    });
-  };
-
-  const sortedTeachers = [...teachers].sort((a, b) => {
-    const nameA = a?.name?.last?.toLowerCase() || a?.username?.toLowerCase() || "";
-    const nameB = b?.name?.last?.toLowerCase() || b?.username?.toLowerCase() || "";
-    return nameA.localeCompare(nameB);
+  const sorted = [...teachers].sort((a, b) => {
+    const A = a?.name?.last || a?.username || "";
+    const B = b?.name?.last || b?.username || "";
+    return A.localeCompare(B);
   });
 
-  const filtered = sortedTeachers.filter((t) => {
+  const filtered = sorted.filter(t => {
     const full = `${t.name?.first || ""} ${t.name?.last || ""} ${t.username || ""}`.toLowerCase();
     return full.includes(query.toLowerCase());
   });
 
   return (
-    <View style={styles.page}>
-      <View style={[styles.shell, { maxWidth: MAX_SHELL_WIDTH, paddingHorizontal: HORIZONTAL_PADDING }]}>
-        <AdminWebTabs />
+    <WebPage>
+      <AdminWebTabs />
 
-        <View style={styles.card}>
-          <div style={{ marginBottom: 12 }}>
-            <Text style={styles.title}>Teachers List</Text>
-            <div style={{ marginTop: 8 }} />
+      <View style={styles.card}>
+        {/* HEADER */}
+        <View style={[styles.header, isMobile && styles.headerMobile]}>
+          <Text style={styles.title}>Teachers List</Text>
+
+          {Platform.OS === "web" && (
             <input
-              placeholder="Search by name or username..."
+              placeholder="Search by name or username…"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={e => setQuery(e.target.value)}
               style={webStyles.input}
             />
-          </div>
-
-          {loading ? (
-            <ActivityIndicator size="large" color="#1e3a8a" />
-          ) : error ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : (
-            <>
-              {filtered.length === 0 && (
-                <View style={styles.empty}>
-                  <Text style={styles.emptyText}>No teachers found.</Text>
-                </View>
-              )}
-
-              {filtered.map((item) => (
-                <View key={item._id} style={styles.teacherRow}>
-                  <View style={styles.rowLeft}>
-                    {item.profilePicture ? (
-                      // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                      <Image
-                        source={{ uri: item.profilePicture }}
-                        style={styles.profileImage}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <Ionicons name="person-circle-outline" size={48} color="#007AFF" />
-                    )}
-
-                    <View style={{ marginLeft: 12 }}>
-                      <Text style={styles.teacherName}>
-                        {item.name
-                          ? `${item.name.last}, ${item.name.first}${item.name.middle ? " " + item.name.middle[0] + "." : ""}`
-                          : item.username}
-                      </Text>
-                      <Text style={styles.teacherMeta}>
-                        {item.username} — {item.office_department || "-"}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.rowRight}>
-                    <Pressable
-                      onPress={() => router.push(`/admin/edit-teacher/${item._id}`)}
-                      style={({ hovered }) => [styles.editBtn, hovered && styles.editHover]}
-                    >
-                      <Text style={styles.editText}>Edit</Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => handleView(item._id)}
-                      style={({ hovered }) => [
-                        styles.viewBtn,
-                        hovered && styles.viewHover,
-                        actionLoading && { opacity: 0.7 },
-                      ]}
-                    >
-                      <Text style={styles.viewText}>View</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </>
           )}
         </View>
+
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : filtered.length === 0 ? (
+          <Text style={styles.emptyText}>No teachers found.</Text>
+        ) : (
+          filtered.map(item => (
+            <View
+              key={item._id}
+              style={[
+                styles.teacherRow,
+                isMobile && styles.teacherRowMobile,
+              ]}
+            >
+              {/* LEFT */}
+              <View style={styles.rowLeft}>
+                {item.profilePicture ? (
+                  <Image
+                    source={{ uri: item.profilePicture }}
+                    style={styles.profileImage}
+                  />
+                ) : (
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={48}
+                    color="#007AFF"
+                  />
+                )}
+
+                <View style={styles.teacherInfo}>
+                  <Text style={styles.teacherName}>
+                    {item.name
+                      ? `${item.name.last}, ${item.name.first}${
+                          item.name.middle ? " " + item.name.middle[0] + "." : ""
+                        }`
+                      : item.username}
+                  </Text>
+                  <Text style={styles.teacherMeta}>
+                    {item.username} — {item.office_department || "-"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* RIGHT */}
+              <View
+                style={[
+                  styles.rowRight,
+                  isMobile && styles.rowRightMobile,
+                ]}
+              >
+                <Pressable
+                  onPress={() =>
+                    router.push(`/admin/edit-teacher/${item._id}`)
+                  }
+                  style={({ hovered }) => [
+                    styles.editBtn,
+                    hovered && styles.editHover,
+                  ]}
+                >
+                  <Text style={styles.editText}>Edit</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() =>
+                    router.push(`/(adminTabs)/teacherDetails/${item._id}`)
+                  }
+                  style={({ hovered }) => [
+                    styles.viewBtn,
+                    hovered && styles.viewHover,
+                  ]}
+                >
+                  <Text style={styles.viewText}>View</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))
+        )}
       </View>
-    </View>
+    </WebPage>
   );
 }
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#eef2ff", paddingVertical: 24, alignItems: "center" },
-  shell: { width: "100%" },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 18,
+    marginBottom: 36,
+  },
 
-  card: { width: "100%", backgroundColor: "#fff", borderRadius: 12, padding: 18, boxShadow: "0 6px 20px rgba(10,20,30,0.06)" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+  headerMobile: {
+    flexDirection: "column",
+  },
 
-  title: { fontSize: 18, fontWeight: "700", color: "#1e3a8a", marginBottom: 12 },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
 
-  teacherRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f1f3f6", alignItems: "center" },
-  rowLeft: { flexDirection: "row", alignItems: "center", maxWidth: "70%" },
-  rowRight: { flexDirection: "row", alignItems: "center" },
+  teacherRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f3f6",
+    gap: 12,
+  },
+  teacherRowMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
 
-  teacherName: { fontSize: 15, fontWeight: "700", color: "#0f172a" },
-  teacherMeta: { color: "#6b7280", marginTop: 6 },
+  rowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
 
-  profileImage: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#e0e0e0" },
+  teacherInfo: {
+    flexShrink: 1,
+  },
+
+  rowRight: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  rowRightMobile: {
+    width: "100%",
+    justifyContent: "flex-end",
+  },
+
+  teacherName: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  teacherMeta: {
+    color: "#6b7280",
+    marginTop: 4,
+  },
+
+  profileImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#e0e0e0",
+  },
 
   editBtn: {
     backgroundColor: "#eef2ff",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    marginRight: 8,
-    cursor: Platform.OS === "web" ? "pointer" : undefined,
   },
-  editHover: { backgroundColor: "#e6eeff" },
-  editText: { color: "#1e3a8a", fontWeight: "700" },
+  editHover: {
+    backgroundColor: "#e6eeff",
+  },
+  editText: {
+    color: "#1e3a8a",
+    fontWeight: "700",
+  },
 
   viewBtn: {
     backgroundColor: "#007AFF",
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
-    cursor: Platform.OS === "web" ? "pointer" : undefined,
   },
-  viewHover: { backgroundColor: "#0066e6" },
-  viewText: { color: "#fff", fontWeight: "700" },
+  viewHover: {
+    backgroundColor: "#0066e6",
+  },
+  viewText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 
-  errorBox: { paddingVertical: 16, alignItems: "center" },
-  errorText: { color: "red" },
-
-  empty: { paddingVertical: 24, alignItems: "center" },
-  emptyText: { color: "#6b7280" },
+  emptyText: {
+    color: "#6b7280",
+    textAlign: "center",
+    paddingVertical: 24,
+  },
+  errorText: {
+    color: "#b91c1c",
+    textAlign: "center",
+    paddingVertical: 24,
+  },
 });
 
+/* web-only */
 const webStyles = {
-  input: { width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb", marginBottom: 12, fontSize: 15 },
+  input: {
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid #e5e7eb",
+    fontSize: 15,
+    width: "100%",
+    maxWidth: 320,
+  },
 };

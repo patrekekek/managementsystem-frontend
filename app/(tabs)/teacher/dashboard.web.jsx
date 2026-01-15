@@ -24,6 +24,9 @@ export default function TeacherDashboardWeb() {
   const { isMobile } = useResponsive();
   const router = useRouter();
 
+  //temporary
+  const [leaveCredits, setLeaveCredits] = useState(0);
+
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(false);
 
@@ -63,6 +66,24 @@ export default function TeacherDashboardWeb() {
     <WebPage>
       <TeacherWebTabs />
 
+      {/* Consumable Leave Credits Panel */}
+      <View style={styles.creditPanel}>
+        <Text style={styles.creditTitle}>Consumable Leave Credits</Text>
+
+        {leaveCredits === null ? (
+          <Text style={styles.muted}>Not available</Text>
+        ) : (
+          <>
+            <View style={styles.creditRow}>
+              <Text style={styles.creditValue}>{leaveCredits}</Text>
+              <Text style={styles.creditLabel}>credits remaining</Text>
+            </View>
+
+          </>
+        )}
+      </View>
+
+
       <View style={[styles.grid, isMobile && styles.gridMobile]}>
         <StatCard label="Total (recent)" value={totals.total} />
         <StatCard label="Pending" value={totals.pending} color="#D97706" />
@@ -84,7 +105,7 @@ export default function TeacherDashboardWeb() {
         />
       </View>
 
-      {/* ---------- RECENT ACTIVITY ---------- */}
+
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Recent Activity</Text>
 
@@ -291,4 +312,41 @@ const styles = StyleSheet.create({
   approved: { backgroundColor: "#ECFDF5", color: "#065f46" },
   rejected: { backgroundColor: "#FEF2F2", color: "#991B1B" },
   pending: { backgroundColor: "#FFFBEB", color: "#92400E" },
+  creditPanel: {
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 18,
+  marginBottom: 20,
+},
+  creditTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
+  creditRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
+    marginBottom: 6,
+  },
+
+  creditValue: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#1e3a8a",
+  },
+
+  creditLabel: {
+    fontSize: 14,
+    color: "#6b7280",
+  },
+
+  //might be used later hehehhehe
+  creditNote: {
+    fontSize: 12,
+    color: "#6b7280",
+    lineHeight: 16,
+  },
+
 });
